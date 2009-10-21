@@ -1,0 +1,18 @@
+{% load format_tags %}
+===Заказ #{{ basket.id|stringformat:"06d" }}===
+{% for basketitem in basket.basketitem_set.all %}
+    {{ forloop.counter }}. штрих-код:{{basketitem.item.barcode}} {{ basketitem.item }} ({{ basketitem.quantity }} шт.)
+{% endfor %}
+
+===Данные о заказчике===
+
+Телефон:                 {{ data.contact }}
+Удобное время для связи: {{ data.contact_time }}
+Адрес доставки:          {{ data.address }}
+{% if discount %}
+Использовать скидку      {{ discount|moneyfmt }} руб.
+{% endif %}
+{% if data.comment %}
+Комментарий пользователя:
+{{ data.comment }}
+{% endif %}

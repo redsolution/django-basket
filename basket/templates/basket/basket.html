@@ -1,0 +1,96 @@
+{% extends 'base.html' %}{% load basket_tags pytils_numeral format_tags custom_menu_tags %}
+
+{% block center %}
+<!-- Страница корзины -->
+<div class="basket_page">
+    <div class="breadcrumbs" >{% custom_breadcrumb %}</div>
+    <h3>Корзина</h3>
+    {% if not cookie_error %}
+    
+	{% if basket.empty %}
+	   <h3>Ваша корзина пуста</h3>
+	{% else %}
+        <p>В корзине всего {{ basket.goods }} {{ basket.goods|choose_plural:"товар,товара,товаров" }} на сумму {{ basket.price|moneyfmt }} руб.</p>
+    <form action="." method="post">
+    {{ formset.management_form }}
+    <table class="checkout">
+        <colgroup>
+            <col width="33" />
+            <col width="229" />
+            <col width="69" />
+            <col width="67" />
+            <col width="72" />
+        </colgroup>
+        <tr>
+            <th>&nbsp;</th>
+            <th width="400">Наименование товара</th>
+            <th>Кол-во, шт.</th>
+            <th>Сумма, руб.</th>
+        </tr>
+        {% for form in formset.forms %}
+		<tr>
+            <td class="center">
+            {% if form.instance.item.images.count %}
+                <img src="{{ form.instance.item.images.all.0.thumb130.url }}" alt="{{ form.instance.item.tree.name }}" title="" />
+            {% else %}
+                <img src="/media/img/default_thumb.png" alt="{{ form.instance.item.tree.name }}" title="" />
+            {% endif %}
+            </td>
+            
+            <td>
+                <a href="{{ form.instance.item.tree.get.get_absolute_url }}" title="{{ form.instance.item.formatted_name }}">{{ form.instance.item.formatted_name }}</a>
+                <br/>
+                Цена: {{ form.instance.item.price|moneyfmt }} рублей.<br/><br/>
+            </td>
+			<td class="center small">{{ form.quantity }}</td>
+			<td class="center"><span class="price">{{ form.instance.item.price|moneyfmt }}</span></td>
+            {{ form.item }}{{ form.basket }}{{ form.id }}
+		</tr>
+        {% endfor %}
+        <tr>
+            <th colspan="2" class="align_right">Итого</th>
+            <th>{{ basket.goods }}</th>
+            <th><span class="price">{{ basket.price|moneyfmt }}</span></th>
+        </tr>
+    </table>
+        <p>
+            <input type="submit" id="refresh" class="submit" value="Пересчитать" />
+            <input type="submit" class="submit" value="Оформить заказ" />
+        </p><br />
+
+	</form>
+	{% endif %}
+    <div class="links">
+        <p>
+            <a href="{% url emailauth_account %}" title="Перейти в личный кабинет">Перейти в личный кабинет</a>
+        </p>
+    </div>
+</div>
+    {% else %}
+        <h3>Ошибка!</h3>
+        <p>Для работы с корзиной в вашем браузере должны быть разрешены <a href="http://support.mozilla.com/ru/kb/Cookies">Cookies</a> с данного сайта</p>
+
+    {% endif %}
+{% endblock center %}
+
+{% block rightcolumn %}
+    {% if not cookie_error %}
+    <div class="basket">
+        <div class="basketBox">
+            <div class="basketBoxInner">
+            {% show_basket_history %}
+            </div>
+        </div>
+    {% if request.user.is_authenticated %}
+        {% if request.user.get_profile.discount %}
+        <div class="basketBox">
+            <div class="basketBoxInner">
+                <p><span>За прошлый месяц вы накопили скидку:</span></p>
+                <p>{{ request.user.get_profile.discount|moneyfmt }} руб.</p>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+    </div>
+    {% endif %}
+{% endblock rightcolumn %}

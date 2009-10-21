@@ -1,0 +1,65 @@
+{% extends "base.html" %}{% load basket_tags pytils_numeral format_tags %}
+
+{% block center %}
+<div class="register">
+    <h3>Оформление заказа</h3>
+    <form action="." method="post">
+        <table class="form">
+            {% if form.non_field_errors %}<tr><th colspan="2">{{ form.non_field_errors }}</th></tr>{% endif %}
+            <tr>
+                <th>Ваш телефон:</th>
+                <td class="short">{{ form.contact.errors }}{{ form.contact }}</td>
+            </tr>
+            <tr>
+                <th>Удобное время для контактов с вами:</th>
+                <td class="short">{{ form.contact_time.errors }}{{ form.contact_time }}</td>
+            </tr>
+            <tr>
+                <th>Адрес для доставки</th>
+                <td class="long">{{ form.address.errors }}{{ form.address }}</td>
+            </tr>
+            <tr>
+                <th>Комментарий:</th>
+                <td class="long">{{ form.comment.errors }}{{ form.comment }}</td>
+            </tr>            
+            <tr>
+                <th>Использовать накопленную скидку:</th>
+                <td>{{ form.use_discount.errors }}{{ form.use_discount }}</td>
+            </tr>            
+
+			<tr>
+                <th colspan="2">
+                {% if basket.goods %}
+                    В корзине {{ basket.goods|get_plural:"товар,товара,товаров,нет товаров" }} на сумму {{ basket.price|moneyfmt }} руб.
+                {% else %}
+                    В корзине нет товаров
+                {% endif %}
+                </th>
+            </tr>
+       </table>
+<input type="button" class="submit" value="Назад" onclick="document.location = ('{% url basket %}')"/>
+<input type="submit" class="submit" value="Заказать" />
+    </form>
+</div>
+
+{% endblock %}
+
+{% block rightcolumn %}
+    <div class="basket">
+        <div class="basketBox">
+            <div class="basketBoxInner">
+            {% show_basket_history %}
+            </div>
+        </div>
+    {% if request.user.is_authenticated %}
+        {% if request.user.get_profile.discount %}
+        <div class="basketBox">
+            <div class="basketBoxInner">
+                <p><span>За прошлый месяц вы накопили скидку:</span></p>
+                <p>{{ request.user.get_profile.discount|moneyfmt }} руб.</p>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+    </div>
+{% endblock rightcolumn %}
