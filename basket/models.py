@@ -2,14 +2,21 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
-from catalog.models import Item
 from django import forms
 from datetime import datetime
 from decimal import Decimal
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 
 
 class BasketManager(models.Manager):
+    '''
+    Basket manager add extra methods to operate Basket models.
 
+        get_basket - returns basket, connected to sessin or user
+        history    - returns queryset with Basket obejcts, already ordered
+        repeat     - creates new Basket object wich repeats old object
+    '''
     def get_basket(self, uid):
         if type(uid) is str:
             try:
@@ -53,7 +60,7 @@ class BasketManager(models.Manager):
             new_basket = self.get_basket(old_basket.user)
             new_basket.save()
 
-            for basketitem in old_basket.basketitem_set.all():
+            for basketitem in old_basket.items.all():
                 new_basket.set_quantity(basketitem.item, basketitem.quantity)
 
             return new_basket
@@ -71,58 +78,68 @@ class Basket(models.Model):
 
     objects = BasketManager()
     
-    def order(self):
+    def order_now(self):
         self.order_date = datetime.now()
         self.save()
     
-    def deliver(self):
+    def deliver_now(self):
         self.delivery_date = datetime.now()
         self.delivred = True
         self.save()
 
     def add_item(self, item):
-        already_in_basket = self.basketitem_set.filter(item=item.id).count()
-        
+        item_ct = ContentType.objects.get_for_model(item)
+        already_in_basket = bool(
+            self.items.filter(object_id=item.id, content_type=item_ct).count()
+        )
+
         if already_in_basket:
-            basket_item = self.basketitem_set.get(item=item.id)
+            basket_item = self.items.get(object_id=item.id, content_type=item_ct)
             basket_item.quantity = basket_item.quantity + 1
             basket_item.save()
         else:
-            basket_item = BasketItem(item=item, quantity=1, basket=self)
+            basket_item = BasketItem(content_object=item, quantity=1, basket=self)
             basket_item.save()
-            self.basketitem_set.add(basket_item)
+            self.items.add(basket_item)
             self.save()
 
     def remove_item(self, item):
-        basketitem = self.basketitem_set.get(item=item.id).delete()
+        item_ct = ContentType.objects.get_for_model(item)
+        basketitem = self.items.filter(object_id=item.id, content_type=item_ct).delete()
 
     def set_quantity(self, item, quantity):
-        already_in_basket = self.basketitem_set.filter(item=item.id).count()
+        item_ct = ContentType.objects.get_for_model(item)
+        already_in_basket = bool(
+            self.items.filter(object_id=item.id, content_type=item_ct).count()
+        )
         if quantity <= 0:
             if already_in_basket:
                 self.remove_item(item)
             return
 
         if already_in_basket:
-            basket_item = self.basketitem_set.get(item=item.id)
+            basket_item = self.items.get(object_id=item.id, content_type=item_ct)
             basket_item.quantity = quantity
             basket_item.save()
         else:
-            basket_item = BasketItem(item=item, quantity=quantity, basket=self)
+            basket_item = BasketItem(content_object=item, quantity=quantity, basket=self)
             basket_item.save()
-            self.basketitem_set.add(basket_item)
+            self.items.add(basket_item)
             self.save()
     
     def flush(self):
-        for basket_item in self.basketitem_set.all():
-            self.remove_item(basket_item.item)
+        for basket_item in self.items.all():
+            basket_item.delete()
     
     def calculate(self):
         total_goods = 0 
         total_price = Decimal('0.0')
-        for basket_item in self.basketitem_set.all():
-            total_price = total_price + (basket_item.item.price * basket_item.quantity)
-            total_goods = total_goods + basket_item.quantity
+        for basket_item in self.items.all():
+            try:
+                total_price += (basket_item.content_object.price * basket_item.quantity)
+            except AttributeError:
+                pass
+            total_goods += basket_item.quantity
         return {'goods': total_goods, 'price': total_price}
     
     def goods(self):
@@ -141,19 +158,18 @@ class Basket(models.Model):
             return self.user
     
     def __unicode__(self):
-        return 'basket %s' % self.basketitem_set.all()
+        return 'basket %s' % self.items.all()
 
-
-class HiddenField(models.ForeignKey):
-    def formfield(self, **kwargs):
-        defaults = {'widget': forms.HiddenInput()}
-        defaults.update(kwargs)
-        return super(HiddenField, self).formfield(**defaults)
 
 class BasketItem(models.Model):
     class Meta:
-        ordering = ['item']
+        ordering = ['object_id']
 
-    basket = models.ForeignKey(Basket)
-    item = HiddenField(Item)
+    basket = models.ForeignKey(Basket, related_name='items')
+
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+
     quantity = models.IntegerField(u'Количество')
+

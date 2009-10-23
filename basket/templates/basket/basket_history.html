@@ -1,13 +1,12 @@
-{% if history.count %}{% load pytils_numeral %}
-<p><span>Вы заказывали ранее:</span></p>
-{% with history.0 as last_basket %}
-    {% for item in last_basket.basketitem_set.all %}
-        <p>{{ forloop.counter }}. <a href="{{ item.item.get_absolute_url }}" title="Перейти на страницу товара" target="_blank" >
-        {{ item.item.formatted_name }}</a></p>
-    {% endfor %}
-{% endwith %}
-<p>Всего {{ history.count }} {{ history.count|choose_plural:"заказ,заказа,заказов" }}
-на сумму {{ history_sum }} {{ history_sum|choose_plural:"рубль,рубля,рублей" }}</p>
+{% if history.count %}
+    <p>Вы заказывали ранее:</p>
+    {% with history.0 as last_basket %}
+        {% for item in last_basket.items.all %}
+            <p>{{ forloop.counter }}. <a href="{{ item.content_object.get_absolute_url }}" title="Перейти на страницу товара" target="_blank" >
+            {{ item.content_object }}</a></p>
+        {% endfor %}
+    {% endwith %}
+    <p>Всего {{ history.count }} заказов на сумму {{ history_sum }} руб.</p>
 {% else %}
-<p><span>Это первый заказ</span></p>
+    <p>Это первый заказ</p>
 {% endif %}

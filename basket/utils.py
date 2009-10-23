@@ -3,6 +3,7 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from basket.models import Basket
 
 
 def get_basket_from_request(request):
@@ -37,3 +38,13 @@ def render_to(template_path):
                 context_instance=RequestContext(request))
         return wrapper
     return decorator
+
+def import_item(path, error_text):
+    """Imports a model by given string. In error case raises ImpoprelyConfigured"""
+    i = path.rfind('.')
+    module, attr = path[:i], path[i+1:]
+    try:
+        return getattr(__import__(module, {}, {}, ['']), attr)
+    except ImportError, e:
+        raise ImproperlyConfigured('Error importing %s %s: "%s"' % (error_text, path, e))
+

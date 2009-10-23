@@ -7,13 +7,6 @@ from decimal import Decimal
 register = template.Library()
 
 
-@register.inclusion_tag('basket/basket_panel.html', takes_context=True)
-def show_basket_panel(context):
-    request = context.get('request', None)
-    if request is not None:
-        basket = get_basket_from_request(request)
-    return locals()
-
 @register.inclusion_tag('basket/basket_history.html', takes_context=True)
 def show_basket_history(context):
     request = context.get('request', None)
@@ -24,3 +17,4 @@ def show_basket_history(context):
         else:
             history_sum = Decimal('0.00')
     return locals()
+
