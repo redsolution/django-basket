@@ -1,5 +1,5 @@
-{% if basket.goods %}{% load pytils_numeral format_tags %}
-    <p>В вашей корзине {{ basket.goods }}  {{ basket.goods|choose_plural:"товар,товара,товаров" }} на сумму <span class="price">{{ basket.price|moneyfmt }} руб.</span><br />
+{% if basket.goods %}
+    <p>В вашей корзине {{ basket.goods }} товаров на сумму <span class="price">{{ basket.price }} руб.</span><br />
     <a href="{% url basket %}" title="Оформить заказ">Перейти в корзину</a></p>
 {% else %}
     <p>Ваша корзина пуста</p>

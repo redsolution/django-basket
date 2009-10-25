@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.template import loader
 from django.conf import settings
@@ -45,7 +46,7 @@ def confirm(request):
     basket = request.basket
 
     if request.method == 'POST':
-        form = BasketForm(request.POST, instance=basket, user=request.user)
+        form = BasketForm(request.POST, instance=basket)
         if form.is_valid():
             basket = form.save(commit=False)
             message = loader.render_to_string('basket/order.txt', {
@@ -56,7 +57,7 @@ def confirm(request):
             basket.order_now()
             return HttpResponseRedirect(reverse('thankyou'))
     else:
-        form = BasketForm(instance=basket, user=request.user)
+        form = BasketForm(instance=basket)
     return {'form': form, 'basket': basket}
 
 # ajax views
@@ -65,11 +66,12 @@ def add_to_basket(request):
     basket = request.basket
 
     if 'item' in request.REQUEST:
-        try:
-            item_id = int(request.REQUEST.get('item'))
-            item = Item.objects.get(id=item_id)
-        except (Item.DoesNotExist, ValueError), e:
-            return HttpResponseServerError(e)
+        item_id = request.REQUEST.get('item', None)
+        content_type_id, object_id = item_id.split('-')[1:]
+
+        content_type = ContentType.objects.get(id=content_type_id)
+        item = content_type.get_object_for_this_type(id=object_id)
+
         basket.add_item(item)
         return HttpResponse('OK')
     else:
@@ -80,10 +82,14 @@ def remove_from_basket(request):
     basket = request.basket
 
     if 'item' in request.REQUEST:
-        try:
-            item_id = int(request.REQUEST.get('item'))
-            item = Item.objects.get(id=item_id)
-        except (Item.DoesNotExist, ValueError), e:
-            return HttpResponseServerError(e)
+        item_id = request.REQUEST.get('item', None)
+        content_type_id, object_id = item_id.split('-')[1:]
+
+        content_type = ContentType,obejcts.get(id=content_type_id)
+        item = content_type.get_object_for_this_type(id=object_id)
 
         basket.remove_item(item)
+        return HttpResponse('OK')
+    else:
+        return HttpResponseServerError('Incorrect request')
+

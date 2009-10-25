@@ -1,13 +1,5 @@
-;$(document).ready(function() {
-	$('.basket:submit').click(function(){
-		if ($(this).siblings('select.metaitem').size()) {
-			var item_id = $(this).siblings('select.metaitem').attr('value');
-		} else {
-			var item_id = $(this).attr('id').split('item-')[1];
-		}
-		add_to_basket(item_id);
-	});
-	
+;
+$(document).ready(function() {
 	$('#refresh').click(function() {
 		$(this).after('<input type="hidden" name="ajax" value="1">');
 	});

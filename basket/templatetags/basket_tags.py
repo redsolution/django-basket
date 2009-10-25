@@ -1,5 +1,5 @@
 from django import template
-from catalog.models import Section, TreeItem
+from django.contrib.contenttypes.models import ContentType
 from basket.views import get_basket_from_request
 from basket.models import Basket
 from decimal import Decimal
@@ -18,3 +18,7 @@ def show_basket_history(context):
             history_sum = Decimal('0.00')
     return locals()
 
+@register.simple_tag
+def basket_add(item):
+    ct = ContentType.objects.get_for_model(item)
+    return 'item-%s-%s' % (ct.id, item.id)

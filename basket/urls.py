@@ -9,5 +9,5 @@ urlpatterns = patterns('',
     url(r'^ajax/$', 'django.views.generic.simple.direct_to_template',
         {'template': 'basket/basket_panel.html'}, name='ajax_basket'),
     url(r'^thankyou/$', 'django.views.generic.simple.direct_to_template',
-        {'template': 'basket/thankyou.html'}, name='ajax_basket'),
+        {'template': 'basket/thankyou.html'}, name='thankyou'),
 )
