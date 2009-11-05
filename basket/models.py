@@ -74,7 +74,7 @@ class Basket(models.Model):
     
     order_date = models.DateTimeField(u'Дата заказа', null=True, blank=True)
     delivery_date = models.DateTimeField(u'Дата доставки', null=True, blank=True)
-    delivered = models.BooleanField(u'Доставлено', null=True)
+    delivered = models.NullBooleanField(u'Доставлено')
 
     objects = BasketManager()
     
