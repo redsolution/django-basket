@@ -7,10 +7,11 @@ from basket.models import Basket
 
 
 def get_basket_from_request(request):
+    session_key = request.session.session_key
     if request.user.is_authenticated():
         uid = request.user
-    elif request.session.session_key:
-        uid = request.session.session_key
+    elif session_key:
+        uid = session_key
     else:
         uid = None
     return Basket.objects.get_basket(uid)
