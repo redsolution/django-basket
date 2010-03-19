@@ -5,19 +5,19 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.template import loader
 from django.conf import settings
-from basket.forms import BasketForm, BasketFormset
-from basket.utils import render_to, send_mail, get_basket_from_request
-from basket.models import Basket, BasketItem
+from basket.forms import OrderForm, OrderFormset
+from basket.utils import render_to, get_basket_from_request
+from basket.models import Order, BasketItem
 
 
 @render_to('basket/basket.html')
 def show_basket(request):
-    basket = request.basket
-    if basket is None:
+    order = request.order
+    if order is None:
         return {'cookie_error': True}
 
     if request.method == 'POST':
-        formset = BasketFormset(request.POST, instance=basket)
+        formset = OrderFormset(request.POST, instance=basket)
         if formset.is_valid():
             basket_items = formset.save()
 
@@ -27,34 +27,37 @@ def show_basket(request):
             for form in formset.forms:
                 keep = form.cleaned_data.get('keep', True)
                 if not keep:
-                    basket.remove_item(form.instance.content_object)
-            basket.save()
-            
+                    order.remove_item(form.instance.content_object)
+            order.save()
+
             if 'ajax' in request.POST:
-                return {'formset': BasketFormset(instance=basket),
-                        'basket': basket}
+                # ajax basket update
+                return {
+                    'formset': OrderFormset(instance=basket),
+                    'order': order
+                }
             else:
                 return HttpResponseRedirect(reverse('confirm'))
     else:
-        formset = BasketFormset(instance=basket)
+        formset = OrderFormset(instance=order)
 
-    return {'formset': formset,
-            'basket': basket}
+    return {
+        'formset': formset,
+        'order': order,
+    }
 
 @render_to('basket/confirm.html')
 def confirm(request):
-    basket = request.basket
+    order = request.order
 
     if request.method == 'POST':
-        form = BasketForm(request.POST, instance=basket)
+        form = OrderForm(request.POST, instance=basket)
         if form.is_valid():
-            basket = form.save(commit=False)
+            order = form.save(commit=False)
             message = loader.render_to_string('basket/order.txt', {
-                'basket': basket,
+                'order': order,
                 'data': form.cleaned_data,
             })
-            send_mail(u'Форма заказа', message, [manager[1] for manager in settings.MANAGERS])
-            basket.order_now()
             return HttpResponseRedirect(reverse('thankyou'))
     else:
         form = BasketForm(instance=basket)
@@ -63,7 +66,7 @@ def confirm(request):
 # ajax views
 
 def add_to_basket(request):
-    basket = request.basket
+    order = request.order
 
     if 'item' in request.REQUEST:
         item_id = request.REQUEST.get('item', None)
@@ -72,24 +75,23 @@ def add_to_basket(request):
         content_type = ContentType.objects.get(id=content_type_id)
         item = content_type.get_object_for_this_type(id=object_id)
 
-        basket.add_item(item)
+        order.add_item(item)
         return HttpResponse('OK')
     else:
         return HttpResponseServerError('Incorrect request')
 
 
 def remove_from_basket(request):
-    basket = request.basket
+    roder = request.order
 
     if 'item' in request.REQUEST:
         item_id = request.REQUEST.get('item', None)
         content_type_id, object_id = item_id.split('-')[1:]
 
-        content_type = ContentType,obejcts.get(id=content_type_id)
+        content_type = ContentType, obejcts.get(id=content_type_id)
         item = content_type.get_object_for_this_type(id=object_id)
 
-        basket.remove_item(item)
+        order.remove_item(item)
         return HttpResponse('OK')
     else:
         return HttpResponseServerError('Incorrect request')
-

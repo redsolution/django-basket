@@ -1,7 +1,7 @@
 from django import template
 from django.contrib.contenttypes.models import ContentType
-from basket.views import get_basket_from_request
-from basket.models import Basket
+from basket.views import get_order_from_request
+from basket.models import Order
 from decimal import Decimal
 
 register = template.Library()
@@ -11,9 +11,9 @@ register = template.Library()
 def show_basket_history(context):
     request = context.get('request', None)
     if request is not None:
-        history = Basket.objects.history(request.user)
+        history = Order.objects.history(request.user)
         if history:
-            history_sum = int(sum([basket.price() for basket in history]))
+            history_sum = Decimal(sum([order.price() for order in history]))
         else:
             history_sum = Decimal('0.00')
     return locals()
