@@ -16,7 +16,7 @@ def get_order_from_request(request):
         uid = session_key
     else:
         uid = None
-    return Order.objects.get_basket(uid)
+    return Order.objects.get_order(uid)
 
 def send_mail(subject, message, recipent_list):
     from_email = settings.DEFAULT_FROM_EMAIL

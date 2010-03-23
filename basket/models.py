@@ -191,7 +191,7 @@ class BasketItem(models.Model):
     class Meta:
         ordering = ['object_id']
 
-    basket = models.ForeignKey('Order', related_name='items')
+    order = models.ForeignKey('Order', related_name='items')
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
