@@ -2,12 +2,9 @@
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.template import loader
-from django.conf import settings
 from basket.forms import OrderForm, OrderFormset
-from basket.utils import render_to, get_basket_from_request
-from basket.models import Order, BasketItem
+from basket.utils import render_to
 
 
 @render_to('basket/basket.html')

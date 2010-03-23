@@ -62,15 +62,33 @@ class OrderManager(models.Manager):
         if type(uid) is str:
             try:
                 session = Session.objects.get(pk=uid)
-                order, created = self.get_query_set(
-                    ).get_or_create(session=session, status__type__closed=False)
+
+                try:
+                    order = self.get_query_set().get(
+                        session=session, status__type__closed=False)
+                except Order.DoesNotExist:
+                    # create order automatically
+                    status_type = StatusType.objects.filter(closed=False)[0]
+                    new_status, created = Status.objects.get_or_create(type=status_type)
+                    order = Order(session=session, status=new_status)
+                    order.save()
                 return order
+
             except Session.DoesNotExist:
                 # if session doesnt' exist, order won't be created
                 pass
+
         elif type(uid) is User:
-            order, created = self.get_query_set(
-                ).get_or_create(user=uid, status__type__closed=False)
+            try:
+                order = self.get_query_set().get(
+                    user=uid, status__type__closed=False)
+            except Order.DoesNotExist:
+                # create order automatically
+                status_type = StatusType.objects.filter(closed=False)[0]
+                new_status, created = Status.objects.get_or_create(type=status_type)
+                order = Order(user=uid, status=new_status)
+                order.save()
+
             return order
 
     def history(self, uid):
