@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.conf import settings
 from django.forms.models import inlineformset_factory
-from models import Order, BasketItem
+from django.template import loader
+from django.contrib.contenttypes.models import ContentType
+from basket.models import Order, BasketItem
 from basket.utils import import_item, send_mail
 from basket import settings as basket_settings
-from django.contrib.contenttypes.models import ContentType
+
 
 
 class BaseOrderForm(forms.ModelForm):
@@ -34,6 +37,10 @@ class OrderForm(extend_form_class, BaseOrderForm):
     pass
 
     def save(self, *args, **kwds):
+        message = loader.render_to_string('basket/order.txt', {
+            'order': self.instance,
+            'data': self.cleaned_data,
+        })
         send_mail(u'Форма заказа', message,
             [manager[1] for manager in settings.MANAGERS])
 

@@ -1,6 +1,6 @@
 from django import template
 from django.contrib.contenttypes.models import ContentType
-from basket.views import get_order_from_request
+from basket.utils import get_order_from_request
 from basket.models import Order
 from decimal import Decimal
 

@@ -2,7 +2,6 @@
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
-from django.template import loader
 from basket.forms import OrderForm, OrderFormset
 from basket.utils import render_to
 
@@ -14,12 +13,12 @@ def show_basket(request):
         return {'cookie_error': True}
 
     if request.method == 'POST':
-        formset = OrderFormset(request.POST, instance=basket)
+        formset = OrderFormset(request.POST, instance=order)
         if formset.is_valid():
             basket_items = formset.save()
 
             for basket_item in basket_items:
-                basket.set_quantity(basket_item.content_object, basket_item.quantity)
+                order.set_quantity(basket_item.content_object, basket_item.quantity)
             # remove items withuot checkboxes
             for form in formset.forms:
                 keep = form.cleaned_data.get('keep', True)
@@ -30,7 +29,7 @@ def show_basket(request):
             if 'ajax' in request.POST:
                 # ajax basket update
                 return {
-                    'formset': OrderFormset(instance=basket),
+                    'formset': OrderFormset(instance=order),
                     'order': order
                 }
             else:
@@ -48,17 +47,13 @@ def confirm(request):
     order = request.order
 
     if request.method == 'POST':
-        form = OrderForm(request.POST, instance=basket)
+        form = OrderForm(request.POST, instance=order)
         if form.is_valid():
             order = form.save(commit=False)
-            message = loader.render_to_string('basket/order.txt', {
-                'order': order,
-                'data': form.cleaned_data,
-            })
             return HttpResponseRedirect(reverse('thankyou'))
     else:
-        form = BasketForm(instance=basket)
-    return {'form': form, 'basket': basket}
+        form = OrderForm(instance=order)
+    return {'form': form, 'order': order}
 
 # ajax views
 
@@ -79,7 +74,7 @@ def add_to_basket(request):
 
 
 def remove_from_basket(request):
-    roder = request.order
+    order = request.order
 
     if 'item' in request.REQUEST:
         item_id = request.REQUEST.get('item', None)

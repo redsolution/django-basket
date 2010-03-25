@@ -1,6 +1,6 @@
 <div id="basket_panel">
-{% if request.basket.goods %}
-    <p>В вашей корзине {{ request.basket.goods }} товаров на сумму <span class="price">{{ request.basket.price }} руб.</span><br />
+{% if request.order.goods %}
+    <p>В вашей корзине {{ request.order.goods }} товаров на сумму <span class="price">{{ request.order.price }} руб.</span><br />
     <a href="{% url basket %}" title="Оформить заказ">Перейти в корзину</a></p>
 {% else %}
     <p>Ваша корзина пуста</p>

@@ -105,7 +105,7 @@ class OrderManager(models.Manager):
                 return []
         elif type(uid) is User:
             history = self.get_query_set().filter(
-                user=uid, order__status__closed=True)
+                user=uid, status__type__closed=True)
             return history
 
 
@@ -157,7 +157,7 @@ class Order(models.Model):
         )
 
         if quantity <= 0:
-            if already_in_basket:
+            if already_in_order:
                 self.remove_item(item)
             return
 
@@ -166,7 +166,7 @@ class Order(models.Model):
             basket_item.quantity = quantity
             basket_item.save()
         else:
-            basket_item = BasketItem(content_object=item, quantity=quantity, basket=self)
+            basket_item = BasketItem(content_object=item, quantity=quantity, order=self)
             basket_item.save()
             self.items.add(basket_item)
             self.save()
