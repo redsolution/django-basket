@@ -10,7 +10,7 @@ from django.contrib.contenttypes import generic
 from basket import settings as basket_settings
 
 
-class StatusType(models.Model):
+class Status(models.Model):
     class Meta:
         verbose_name = u'Тип статуса'
         verbose_name_plural = u'Типы статуса'
@@ -18,17 +18,24 @@ class StatusType(models.Model):
     name = models.CharField(max_length=20, verbose_name=u'Название')
     closed = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return self.name
 
-class Status(models.Model):
+
+class OrderStatus(models.Model):
     class Meta:
         verbose_name = u'Статус заказа'
         verbose_name_plural = u'Статусы заказа'
-        ordering = ['date']
+#        ordering = ['date']
 
-    type = models.ForeignKey('StatusType')
+    type = models.ForeignKey('Status')
+    order = models.ForeignKey('Order')
     date = models.DateTimeField(default=lambda: datetime.now())
     comment = models.CharField(max_length=100, verbose_name=u'Комментарий',
         blank=True, null=True)
+
+    def __unicode__(self):
+        return self.type.name
 
 
 class OrderManager(models.Manager):
@@ -68,10 +75,13 @@ class OrderManager(models.Manager):
                         session=session, status__type__closed=False)
                 except Order.DoesNotExist:
                     # create order automatically
-                    status_type = StatusType.objects.filter(closed=False)[0]
-                    new_status, created = Status.objects.get_or_create(type=status_type)
-                    order = Order(session=session, status=new_status)
+                    order = Order(session=session)
                     order.save()
+                    # set new status
+                    status = Status.objects.filter(closed=False)[0]
+                    new_order_status, created = OrderStatus.objects.get_or_create(type=status)
+                    order.status.add(new_order_status)
+
                 return order
 
             except Session.DoesNotExist:
@@ -84,10 +94,13 @@ class OrderManager(models.Manager):
                     user=uid, status__type__closed=False)
             except Order.DoesNotExist:
                 # create order automatically
-                status_type = StatusType.objects.filter(closed=False)[0]
-                new_status, created = Status.objects.get_or_create(type=status_type)
-                order = Order(user=uid, status=new_status)
+                order = Order(user=uid)
                 order.save()
+                # set new status
+                status = Status.objects.filter(closed=False)[0]
+                new_orderstatus, created = OrderStatus.objects.get_or_create(type=status)
+                order.status.add(new_orderstatus)
+
 
             return order
 
@@ -113,11 +126,11 @@ class Order(models.Model):
     class Meta:
         verbose_name = u'Заказ'
         verbose_name_plural = u'Заказы'
-        ordering = ['status__date', ]
+#        ordering = ['status__date', ]
 
     user = models.ForeignKey(User, null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-    status = models.ForeignKey('Status')
+    status = models.ManyToManyField('Status', through='OrderStatus')
 
     objects = OrderManager()
 
@@ -201,6 +214,12 @@ class Order(models.Model):
         else:
             return self.user
 
+    def get_status(self):
+        if self.status.count():
+            return self.status.latest('date')
+        else:
+            return u'Нет состояния'
+
     def __unicode__(self):
         return 'order #%s' % self.id
 
@@ -219,3 +238,7 @@ class BasketItem(models.Model):
 
     def get_price(self):
         return getattr(self.content_object, basket_settings.PRICE_ATTR)
+
+def get_status_types():
+    '''Return chioces for status field'''
+    return [(st.id, st.name) for st in Status.objects.all()]
