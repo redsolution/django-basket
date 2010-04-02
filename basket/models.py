@@ -207,8 +207,8 @@ class Order(models.Model):
             return self.user
 
     def get_status(self):
-        if self.status.count():
-            return self.status.latest('date')
+        if self.orderstatus_set.count():
+            return self.orderstatus_set.latest('date').type
         else:
             return u'Нет состояния'
 

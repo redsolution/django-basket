@@ -23,14 +23,23 @@
 {% block after_field_sets %}
 <fieldset class="module aligned">
   <h2>{{ original }}</h2>
-  <div class="description">Дескрипшн</div>
+  <div class="description">Онлайн-заказ #{{ original.id }}</div>
     
       <div class="form-row">
-        Каждый филд
-          <div class="field-box">
-            Каждое поле
-              <p class="help">ПОмогите</p>
+        {% for item in original.items.all %}
+          <div class="field">
+            <label for="item_{{ forloop.counter }}">{{ item.content_object }}</label>
+            <input id="item_{{ forloop.counter }}" type="text" value="{{ item.quantity }}" disabled="disabled" />
+            
+              <p class="help">
+              <span>Сумма: {{ item.get_price }}</span>
+              {% if item.content_object.get_absolute_url %}
+              <a href="{{ item.content_object.get_absolute_url }}" target="_blank">ссылка на {{ item.content_type }}</a>
+              {% endif %}
+              </p>
           </div>
+        {% endfor %}
+      <h3>Сумма заказа: {{ original.price }}<br/> Количество товаров: {{ original.goods }}</h3>
       </div>
 </fieldset>
 {% endblock %}

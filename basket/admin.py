@@ -13,8 +13,10 @@ class StatusInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [StatusInline, ]
     exclude = ['user', 'session']
+    list_display = ['__unicode__', 'goods', 'price', 'get_status']
     fieldsets = None
     list_filter = ['status', ]
+
 
 try:
     admin.site.register(Order, OrderAdmin)

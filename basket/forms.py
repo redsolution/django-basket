@@ -6,7 +6,7 @@ from django.template import loader
 from django.contrib.contenttypes.models import ContentType
 from basket.models import Order, BasketItem
 from basket.utils import import_item, send_mail
-from basket import settings as basket_settings
+from basket.settings import BASKET_FORM
 
 
 
@@ -30,7 +30,7 @@ class ContactForm(forms.ModelForm):
     comment = forms.CharField(label=u'Комментарии', help_text='Поле не обязательное',
        max_length=200, required=False)
 
-extend_form_class = import_item(basket_settings.BASKET_FORM, 'Can not import BASKET_FORM')
+extend_form_class = import_item(BASKET_FORM, 'Can not import BASKET_FORM')
 
 
 class OrderForm(extend_form_class, BaseOrderForm):
