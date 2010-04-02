@@ -6,8 +6,8 @@ from django.template import RequestContext
 from basket.models import Order
 
 
-def get_order_from_request(request):
-    # in django 1.0.2 if we not request this variable, session wil not be created 
+def get_order_from_request(request, create=False):
+    # if we not request this variable, session wil not be created 
     session_key = request.session.session_key
 
     if request.user.is_authenticated():
@@ -16,7 +16,10 @@ def get_order_from_request(request):
         uid = session_key
     else:
         uid = None
-    return Order.objects.get_order(uid)
+    return Order.objects.get_order(uid, create)
+
+def create_order_from_request(request):
+    return get_order_from_request(request, True)
 
 def send_mail(subject, message, recipent_list):
     from_email = settings.DEFAULT_FROM_EMAIL

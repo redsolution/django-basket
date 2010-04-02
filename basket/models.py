@@ -26,7 +26,7 @@ class OrderStatus(models.Model):
     class Meta:
         verbose_name = u'Статус заказа'
         verbose_name_plural = u'Статусы заказа'
-#        ordering = ['date']
+        ordering = ['date']
 
     type = models.ForeignKey('Status')
     order = models.ForeignKey('Order')
@@ -61,7 +61,7 @@ class OrderManager(models.Manager):
         else:
             return self.get_query_set().filter(session__isnull=True)
 
-    def get_order(self, uid):
+    def get_order(self, uid, create=False):
         '''
             Get or create order, linked to given user or session.
                 uid - User instance or session key (str)
@@ -72,35 +72,28 @@ class OrderManager(models.Manager):
 
                 try:
                     order = self.get_query_set().get(
-                        session=session, status__type__closed=False)
+                        session=session, status__isnull=True)
                 except Order.DoesNotExist:
-                    # create order automatically
-                    order = Order(session=session)
-                    order.save()
-                    # set new status
-                    status = Status.objects.filter(closed=False)[0]
-                    new_order_status, created = OrderStatus.objects.get_or_create(type=status)
-                    order.status.add(new_order_status)
+                    if create:
+                        order = self.get_query_set().create(session=session)
+                    else:
+                        order = None
 
                 return order
 
             except Session.DoesNotExist:
                 # if session doesnt' exist, order won't be created
-                pass
+                return
 
         elif type(uid) is User:
             try:
                 order = self.get_query_set().get(
-                    user=uid, status__type__closed=False)
+                    user=uid, status__isnull=True)
             except Order.DoesNotExist:
-                # create order automatically
-                order = Order(user=uid)
-                order.save()
-                # set new status
-                status = Status.objects.filter(closed=False)[0]
-                new_orderstatus, created = OrderStatus.objects.get_or_create(type=status)
-                order.status.add(new_orderstatus)
-
+                if create:
+                    order = self.get_query_set().create(user=uid)
+                else:
+                    order = None
 
             return order
 
@@ -112,13 +105,13 @@ class OrderManager(models.Manager):
             try:
                 session = Session.objects.get(pk=uid)
                 history = self.get_query_set().filter(
-                    session=session, status__type__closed=True)
+                    session=session, status__closed=True)
                 return history
             except Session.DoesNotExist:
                 return []
         elif type(uid) is User:
             history = self.get_query_set().filter(
-                user=uid, status__type__closed=True)
+                user=uid, status__closed=True)
             return history
 
 
@@ -126,7 +119,6 @@ class Order(models.Model):
     class Meta:
         verbose_name = u'Заказ'
         verbose_name_plural = u'Заказы'
-#        ordering = ['status__date', ]
 
     user = models.ForeignKey(User, null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)

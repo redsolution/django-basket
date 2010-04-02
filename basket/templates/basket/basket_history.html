@@ -1,7 +1,7 @@
 {% if history.count %}
     <p>Вы заказывали ранее:</p>
-    {% with history.0 as last_basket %}
-        {% for item in last_basket.items.all %}
+    {% with history.0 as last_order %}
+        {% for item in last_order.items.all %}
             <p>{{ forloop.counter }}. <a href="{{ item.content_object.get_absolute_url }}" title="Перейти на страницу товара" target="_blank" >
             {{ item.content_object }}</a></p>
         {% endfor %}

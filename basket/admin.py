@@ -14,6 +14,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [StatusInline, ]
     exclude = ['user', 'session']
     fieldsets = None
+    list_filter = ['status', ]
 
 try:
     admin.site.register(Order, OrderAdmin)

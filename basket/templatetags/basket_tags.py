@@ -10,7 +10,7 @@ register = template.Library()
 @register.inclusion_tag('basket/basket_history.html', takes_context=True)
 def show_basket_history(context):
     request = context.get('request', None)
-    if request is not None:
+    if request:
         history = Order.objects.history(request.user)
         if history:
             history_sum = Decimal(sum([order.price() for order in history]))

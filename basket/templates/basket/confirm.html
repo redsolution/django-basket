@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="register">
+<div class="basket">
+    {% if order %}
     <h3>Оформление заказа</h3>
     <form action="." method="post">
         {{ form.as_ul }}
         <input type="button" class="submit" value="Назад" onclick="document.location = ('{% url basket %}')"/>
         <input type="submit" class="submit" value="Заказать" />
     </form>
+    {% else %}
+    <h3>Ваша корзина пуста</h3>
+    {% endif %}
 </div>
 
 {% endblock %}

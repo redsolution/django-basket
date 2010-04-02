@@ -2,12 +2,9 @@
 
 {% block content %}
 <div class="basket">
-    <h3>Корзина {{ request.basket.id }}</h3>
-    {% if not cookie_error %}
-	{% if basket.empty %}
-	   <h3>Ваша корзина пуста</h3>
-	{% else %}
-        <p>В корзине всего {{ basket.goods }} товаров на сумму {{ basket.price }} руб.</p>
+    <h3>Корзина</h3>
+	{% if order %}
+    <p>В корзине всего {{ order.goods }} товаров на сумму {{ order.price }} руб.</p>
     <form action="." method="post">
     {{ formset.management_form }}
     <table class="checkout">
@@ -44,8 +41,8 @@
         {% endfor %}
         <tr>
             <th colspan="2">Итого</th>
-            <th>{{ basket.goods }}</th>
-            <th><span class="price">{{ basket.price }}</span></th>
+            <th>{{ order.goods }}</th>
+            <th><span class="price">{{ order.price }}</span></th>
         </tr>
     </table>
         <p>
@@ -58,12 +55,10 @@
             </script>
         </p>
 	</form>
-	{% endif %}
     {% else %}
-        <h3>Ошибка!</h3>
-        <p>Для работы с корзиной в вашем браузере должны быть разрешены <a href="http://support.mozilla.com/ru/kb/Cookies">Cookies</a> с данного сайта</p>
+       <h3>Ваша корзина пуста</h3>
+	{% endif %}
 
-    {% endif %}
     {% show_basket_history %}
 </div>
 {% endblock content %}

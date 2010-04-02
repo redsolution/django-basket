@@ -3,14 +3,14 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerEr
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
 from basket.forms import OrderForm, OrderFormset
-from basket.utils import render_to
+from basket.utils import render_to, get_order_from_request, create_order_from_request
+from basket.models import Status, OrderStatus
 
 
 @render_to('basket/basket.html')
 def show_basket(request):
+    # do not create order automatically
     order = request.order
-    if order is None:
-        return {'cookie_error': True}
 
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
@@ -44,21 +44,29 @@ def show_basket(request):
 
 @render_to('basket/confirm.html')
 def confirm(request):
+    # do not create order automatically
     order = request.order
 
-    if request.method == 'POST':
-        form = OrderForm(request.POST, instance=order)
-        if form.is_valid():
-            order = form.save(commit=False)
-            return HttpResponseRedirect(reverse('thankyou'))
-    else:
-        form = OrderForm(instance=order)
-    return {'form': form, 'order': order}
+    if order:
+        if request.method == 'POST':
+            form = OrderForm(request.POST, instance=order)
+            if form.is_valid():
+                form.save(commit=False)
+                first_status = Status.objects.all()[0]
+                OrderStatus.objects.create(order=order, type=first_status,
+                    comment=u'Онлайн заказ')
+                return HttpResponseRedirect(reverse('thankyou'))
+        else:
+            form = OrderForm(instance=order)
+        return {'form': form, 'order': order}
 
 # ajax views
 
 def add_to_basket(request):
-    order = request.order
+    if request.order is None:
+        order = create_order_from_request(request)
+    else:
+        order = request.order
 
     if 'item' in request.REQUEST:
         item_id = request.REQUEST.get('item', None)
@@ -74,13 +82,16 @@ def add_to_basket(request):
 
 
 def remove_from_basket(request):
-    order = request.order
+    if request.order is None:
+        order = get_order_from_request(request)
+    else:
+        order = request.order
 
     if 'item' in request.REQUEST:
         item_id = request.REQUEST.get('item', None)
         content_type_id, object_id = item_id.split('-')[1:]
 
-        content_type = ContentType, obejcts.get(id=content_type_id)
+        content_type = ContentType.objects.get(id=content_type_id)
         item = content_type.get_object_for_this_type(id=object_id)
 
         order.remove_item(item)
