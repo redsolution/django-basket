@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="basket">
+    <h3>Отслеживание заказа</h3>
+    {% if form %}
+    <form action="." method="post">
+        {{ form.as_p }}
+        <input type="submit" class="submit" value="отправить" />
+    </form>
+    {% endif %}
+
+    {% if status %}
+        Статус заказа {{ status }}
+        
+        {% if history %}
+        История изменений:
+        <ul>
+        {% for orderstatus in history %}
+            <li>{{ orderstatus }} от {{ orderstatus.date|date:"Y m d" }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% else %}
+        {% if order_id %}
+        Заказа с номером {{ order_id }} не сущеcтвует. Проверьте правильность ввода
+        {% endif %}
+    {% endif %}
+    
+</div>
+
+{% endblock %}

@@ -23,10 +23,10 @@
 {% block after_field_sets %}
 <fieldset class="module aligned">
   <h2>{{ original }}</h2>
-  <div class="description">Онлайн-заказ #{{ original.id }}</div>
+  <div class="description">Онлайн-заказ #<strong>{{ original.id }}<strong></div>
     
+    {% for item in original.items.all %}
       <div class="form-row">
-        {% for item in original.items.all %}
           <div class="field">
             <label for="item_{{ forloop.counter }}">{{ item.content_object }}</label>
             <input id="item_{{ forloop.counter }}" type="text" value="{{ item.quantity }}" disabled="disabled" />
@@ -38,7 +38,9 @@
               {% endif %}
               </p>
           </div>
-        {% endfor %}
+      </div>
+    {% endfor %}
+      <div class="form-row">
       <h3>Сумма заказа: {{ original.price }}<br/> Количество товаров: {{ original.goods }}</h3>
       </div>
 </fieldset>

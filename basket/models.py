@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from basket import settings as basket_settings
+from basket.settings import PRICE_ATTR
 
 
 class Status(models.Model):
@@ -229,7 +229,7 @@ class BasketItem(models.Model):
     quantity = models.IntegerField(u'Количество')
 
     def get_price(self):
-        return getattr(self.content_object, basket_settings.PRICE_ATTR)
+        return getattr(self.content_object, PRICE_ATTR)
 
 def get_status_types():
     '''Return chioces for status field'''

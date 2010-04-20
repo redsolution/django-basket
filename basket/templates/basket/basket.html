@@ -27,9 +27,6 @@
                 {{ form.keep }}
             </td>
             <td>
-                {{ form.instance.content_object }}
-            </td>
-            <td>
                 <a href="{{ form.instance.content_object.get_absolute_url }}" title="{{ form.instance.content_object }}">{{ form.instance.content_object }}</a>
                 <br/>
                 Цена: {{ form.instance.content_object.price }} руб.<br/><br/>

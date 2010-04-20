@@ -45,6 +45,10 @@ class OrderForm(extend_form_class, BaseOrderForm):
             [manager[1] for manager in settings.MANAGERS])
 
 
+class OrderStatusForm(forms.Form):
+    order_id = forms.IntegerField(label=u'Номер закза')
+
+
 class BasketItemForm(forms.ModelForm):
     class Meta:
         model = BasketItem

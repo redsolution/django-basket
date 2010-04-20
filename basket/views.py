@@ -2,10 +2,9 @@
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
-from basket.forms import OrderForm, OrderFormset
+from basket.forms import OrderForm, OrderFormset, OrderStatusForm
 from basket.utils import render_to, get_order_from_request, create_order_from_request
-from basket.models import Status, OrderStatus
-
+from basket.models import Status, OrderStatus, Order
 
 @render_to('basket/basket.html')
 def show_basket(request):
@@ -59,6 +58,29 @@ def confirm(request):
         else:
             form = OrderForm(instance=order)
         return {'form': form, 'order': order}
+
+
+@render_to('basket/order_status.html')
+def order_status(request):
+    if request.method == 'POST':
+        form = OrderStatusForm(request.POST)
+        if form.is_valid():
+            try:
+                order = Order.objects.get(id=form.cleaned_data['order_id'])
+                return {
+                    'status': order.get_status(),
+                    'history': order.orderstatus_set.all(),
+                }
+            except Order.DoesNotExist:
+                return {
+                    'form': form,
+                    'order_id': form.cleaned_data['order_id']
+                }
+        else:
+            return {'form': form}
+    else:
+        return {'form': OrderStatusForm()}
+
 
 # ajax views
 
