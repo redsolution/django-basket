@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from django import forms
-from basket.models import Order, Status, OrderStatus, BasketItem, get_status_types
-from django.forms.models import save_instance
+from basket.models import Order, Status, OrderStatus
 
 
 class StatusInline(admin.TabularInline):
@@ -13,7 +11,7 @@ class StatusInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [StatusInline, ]
     exclude = ['user', 'session']
-    list_display = ['__unicode__', 'goods', 'price', 'get_status']
+    list_display = ['__unicode__', 'goods', 'price', 'get_status', 'registered', 'user']
     fieldsets = None
     list_filter = ['status', ]
 

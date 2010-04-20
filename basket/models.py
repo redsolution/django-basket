@@ -43,24 +43,8 @@ class OrderManager(models.Manager):
     '''
     Custom manager for basket
     methods: 
-    
-        anonymous(is_anonymous) - returns queryset with all anonymous or authorized users
-        get_order(uid) - returns not closed order instance, or creates it
-        history(uid) - returns queryset of closed orders
+        TODO: methods
     '''
-    def anonymous(self, is_anonymous=True):
-        '''
-            Returns queryset filtered by anonymous flag.
-            returns orders from anonymous users
-            Example:
-                
-                Orders.objects.anonymous()  # get all anonymous orders
-                Orders.objects.anonymous(False)  # get all authorized orders
-        '''
-        if is_anonymous:
-            return self.get_query_set().filter(user__isnull=True)
-        else:
-            return self.get_query_set().filter(session__isnull=True)
 
     def from_uid(self, uid):
         '''
@@ -127,20 +111,22 @@ class Order(models.Model):
         verbose_name = u'Заказ'
         verbose_name_plural = u'Заказы'
 
-    user = models.ForeignKey(User, null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
     status = models.ManyToManyField('Status', through='OrderStatus')
 
     objects = OrderManager()
 
-    def anonymous(self):
+    def registered(self):
         '''
-        Returns True is order is from anonymous user
+        Returns True is order is from registered user
         '''
-        if self.user is not None:
+        if self.user is None:
             return False
         else:
             return True
+    registered.short_description = u'Зарегистрирован'
+    registered.boolean = True
 
     def add_item(self, item):
         item_ct = ContentType.objects.get_for_model(item)
@@ -200,24 +186,27 @@ class Order(models.Model):
 
     def goods(self):
         return self.calculate()['goods']
+    goods.short_description = u'Кол-во товаров'
 
     def price(self):
         return self.calculate()['price']
+    price.short_description = u'Сумма'
 
     def empty(self):
         return self.goods() == 0
 
     def get_uid(self):
-        if self.anonymous():
-            return self.session
-        else:
+        if self.registered():
             return self.user
+        else:
+            return self.session
 
     def get_status(self):
         if self.orderstatus_set.count():
             return self.orderstatus_set.latest('date').type
         else:
             return u'Не оформлен'
+    get_status.short_description = u'Статус заказа'
 
     def __unicode__(self):
         return 'order #%s' % self.id

@@ -10,16 +10,19 @@ from django.contrib.sessions.models import Session
 def get_order_from_request(request, create=False):
     # avoid cross import
     from basket.models import Order
-    # if we not request this variable, session wil not be created 
+    uid = uid_from_request(request)
+    return Order.objects.get_order(uid, create)
+
+def uid_from_request(request):
+    # if we won't request this variable, session wil not be created 
     session_key = request.session.session_key
 
     if request.user.is_authenticated():
-        uid = request.user
+        return request.user
     elif session_key:
-        uid = session_key
+        return session_key
     else:
-        uid = None
-    return Order.objects.get_order(uid, create)
+        return None
 
 def resolve_uid(uid):
     if type(uid) is str:
