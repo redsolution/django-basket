@@ -11,9 +11,21 @@ from basket.models import Status, OrderStatus, Order
 def show_basket(request):
     # do not create order automatically
     order = request.order
+    # there are four places where we check that basket is not empty
+    # otherwise, return page with empty basket message
+    # in order to avoid to show basket with 0 goods
+    # 1st place
+    if order.empty():
+        return {}
 
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
+
+        # empty basket condition
+        # 2nd place
+        if len(formset.forms) == 0:
+            return {}
+
         if formset.is_valid():
             basket_items = formset.save()
 
@@ -26,14 +38,25 @@ def show_basket(request):
                     order.remove_item(form.instance.content_object)
             order.save()
 
+            # 3rd place
+            if order.empty():
+                return {}
+
             if 'ajax' in request.POST:
                 # ajax basket update
-                return {
-                    'formset': OrderFormset(instance=order),
-                    'order': order
-                }
+                formset = OrderFormset(instance=order)
+                # empty basket condition
+                # and 4th place
+                if len(formset.forms) == 0:
+                    return {}
+                else:
+                    return {
+                        'formset': formset,
+                        'order': order
+                    }
             else:
                 return HttpResponseRedirect(reverse('confirm'))
+
     else:
         formset = OrderFormset(instance=order)
 

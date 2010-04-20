@@ -2,7 +2,6 @@
 $(document).ready(function() {
 	$('#refresh-basket').click(function() {
 		$(this).after('<input type="hidden" name="ajax" value="1">');
-		return false;
 	});
 });
 
