@@ -44,12 +44,7 @@
     </table>
         <p>
             <input type="submit" value="Оформить заказ" />
-            <input type="submit" id="refresh" value="Пересчитать" />
-            <script>
-                $('#refresh').click(function() {
-                    $(this).after('<input type="hidden" name="ajax" value="1">');
-                });
-            </script>
+            <input type="submit" id="refresh-basket" value="Пересчитать" />
         </p>
 	</form>
     {% else %}
