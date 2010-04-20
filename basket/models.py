@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
 from django import forms
 from datetime import datetime
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from basket.settings import PRICE_ATTR
+from basket.utils import resolve_uid
+from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 
 
 class Status(models.Model):
@@ -61,58 +62,64 @@ class OrderManager(models.Manager):
         else:
             return self.get_query_set().filter(session__isnull=True)
 
+    def from_uid(self, uid):
+        '''
+        Utility method, returns QuerySet of order objects 
+        referenced to given uid: User id or session key
+        
+        Returns empty queryset if nothing found
+        '''
+        kwargs = resolve_uid(uid)
+        if len(kwargs):
+            return self.get_query_set().filter(**kwargs)
+        else:
+            return self.get_empty_query_set()
+
+    def create_from_uid(self, uid):
+        '''
+        Returns new order referenced to given uid: user id or session key
+        '''
+        kwargs = resolve_uid(uid)
+        if len(kwargs):
+            return self.get_query_set().create(**kwargs)
+        else:
+            return self.get_empty_query_set()
+
     def get_order(self, uid, create=False):
         '''
             Get or create order, linked to given user or session.
-                uid - User instance or session key (str)
+            uid - User instance or session key (str)
         '''
-        if type(uid) is str:
-            try:
-                session = Session.objects.get(pk=uid)
+        try:
+            order = self.from_uid(uid).get(status__isnull=True)
+        except Order.DoesNotExist:
+            if create:
+                order = self.create_from_uid(uid)
+            else:
+                order = None
+        return order
 
-                try:
-                    order = self.get_query_set().get(
-                        session=session, status__isnull=True)
-                except Order.DoesNotExist:
-                    if create:
-                        order = self.get_query_set().create(session=session)
-                    else:
-                        order = None
+    def get_last(self, uid):
+        '''
+        Return last order for given UID, supposed to be used after order confirmation:
+        Notice: We should create order and redirect user, so he couldn't resend POST again.
+                But order is already created at this moment, and request has no order attribute.
+                So, I decided fetch last order from database with 'new' status   
+        '''
+        new_status = Status.objects.all()[0]
+        last_queryset = self.from_uid(uid).filter(status=new_status
+            ).order_by('-orderstatus__date')
+        if last_queryset.count():
+            return last_queryset[0]
+        else:
+            return None
 
-                return order
-
-            except Session.DoesNotExist:
-                # if session doesnt' exist, order won't be created
-                return
-
-        elif type(uid) is User:
-            try:
-                order = self.get_query_set().get(
-                    user=uid, status__isnull=True)
-            except Order.DoesNotExist:
-                if create:
-                    order = self.get_query_set().create(user=uid)
-                else:
-                    order = None
-
-            return order
 
     def history(self, uid):
         '''
         Returns closed orders of given user or session 
         '''
-        if type(uid) is str:
-            try:
-                session = Session.objects.get(pk=uid)
-                history = self.get_query_set().filter(
-                    session=session, status__closed=True)
-                return history
-            except Session.DoesNotExist:
-                return []
-        elif type(uid) is User:
-            history = self.get_query_set().filter(
-                user=uid, status__closed=True)
-            return history
+        return self.from_uid(uid).filter(status__closed=True)
 
 
 class Order(models.Model):
@@ -210,7 +217,7 @@ class Order(models.Model):
         if self.orderstatus_set.count():
             return self.orderstatus_set.latest('date').type
         else:
-            return u'Нет состояния'
+            return u'Не оформлен'
 
     def __unicode__(self):
         return 'order #%s' % self.id

@@ -6,6 +6,7 @@ from basket.forms import OrderForm, OrderFormset, OrderStatusForm
 from basket.utils import render_to, get_order_from_request, create_order_from_request
 from basket.models import Status, OrderStatus, Order
 
+
 @render_to('basket/basket.html')
 def show_basket(request):
     # do not create order automatically
@@ -59,6 +60,10 @@ def confirm(request):
             form = OrderForm(instance=order)
         return {'form': form, 'order': order}
 
+@render_to('basket/thankyou.html')
+def thankyou(request):
+    order = Order.objects.get_last(request.user)
+    return {'order': order}
 
 @render_to('basket/order_status.html')
 def order_status(request):

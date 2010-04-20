@@ -3,10 +3,13 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from basket.models import Order
+from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 
 
 def get_order_from_request(request, create=False):
+    # avoid cross import
+    from basket.models import Order
     # if we not request this variable, session wil not be created 
     session_key = request.session.session_key
 
@@ -18,8 +21,20 @@ def get_order_from_request(request, create=False):
         uid = None
     return Order.objects.get_order(uid, create)
 
+def resolve_uid(uid):
+    if type(uid) is str:
+        try:
+            session = Session.objects.get(pk=uid)
+            return {'session': session}
+        except Session.DoesNotExist:
+            return {}
+    elif type(uid) is User:
+        return {'user': uid}
+    else:
+        return {}
+
 def create_order_from_request(request):
-    return get_order_from_request(request, True)
+    return get_order_from_request(request, create=True)
 
 def send_mail(subject, message, recipent_list):
     from_email = settings.DEFAULT_FROM_EMAIL
