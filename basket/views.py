@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerEr
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
 from basket.forms import OrderForm, OrderFormset, OrderStatusForm
-from basket.utils import render_to, get_order_from_request, create_order_from_request
+from basket.utils import render_to, get_order_from_request, create_order_from_request, uid_from_request
 from basket.models import Status, OrderStatus, Order
 
 
@@ -85,7 +85,7 @@ def confirm(request):
 
 @render_to('basket/thankyou.html')
 def thankyou(request):
-    order = Order.objects.get_last(request.user)
+    order = Order.objects.get_last(uid_from_request(request))
     return {'order': order}
 
 @render_to('basket/order_status.html')
