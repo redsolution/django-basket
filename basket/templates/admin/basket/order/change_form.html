@@ -43,6 +43,15 @@
       <div class="form-row">
       <h3>Сумма заказа: {{ original.price }}<br/> Количество товаров: {{ original.goods }}</h3>
       </div>
+      <div class="form-row">
+      <h3>Данные о заказе:</h3>
+        {% for key, value in original.get_form_data.iteritems %}
+            <p>
+            <strong>{{ value.1 }}:</strong>
+            {{ value.0 }}
+            </p>
+        {% endfor %}
+      </div>
 </fieldset>
 {% endblock %}
 

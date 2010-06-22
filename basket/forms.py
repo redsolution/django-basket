@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from basket.models import Order, BasketItem
 from basket.utils import import_item, send_mail
 from basket.settings import BASKET_FORM
-
+from django.utils import simplejson
 
 
 class BaseOrderForm(forms.ModelForm):
@@ -19,7 +19,7 @@ class BaseOrderForm(forms.ModelForm):
     '''
     class Meta:
         model = Order
-        exclude = ('user', 'session', 'status')
+        exclude = ('user', 'session', 'status', 'form_data')
 
 
 class ContactForm(forms.ModelForm):
@@ -34,15 +34,19 @@ extend_form_class = import_item(BASKET_FORM, 'Can not import BASKET_FORM')
 
 
 class OrderForm(extend_form_class, BaseOrderForm):
-    pass
 
     def save(self, *args, **kwds):
         message = loader.render_to_string('basket/order.txt', {
             'order': self.instance,
             'data': self.cleaned_data,
         })
+
+        print 'json:', simplejson.dumps(self.cleaned_data)
+
+        self.instance.form_data = simplejson.dumps(self.cleaned_data)
         send_mail(u'Форма заказа', message,
             [manager[1] for manager in settings.MANAGERS])
+        return super(OrderForm, self).save(*args, **kwds)
 
 
 class OrderStatusForm(forms.Form):

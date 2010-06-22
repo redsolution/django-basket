@@ -74,7 +74,7 @@ def confirm(request):
         if request.method == 'POST':
             form = OrderForm(request.POST, instance=order)
             if form.is_valid():
-                form.save(commit=False)
+                form.save()
                 first_status = Status.objects.all()[0]
                 OrderStatus.objects.create(order=order, type=first_status,
                     comment=u'Онлайн заказ')

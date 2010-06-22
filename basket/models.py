@@ -9,6 +9,7 @@ from basket.settings import PRICE_ATTR
 from basket.utils import resolve_uid
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
+from django.utils import simplejson
 
 
 class Status(models.Model):
@@ -114,6 +115,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
     status = models.ManyToManyField('Status', through='OrderStatus')
+    form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
 
     objects = OrderManager()
 
@@ -207,6 +209,16 @@ class Order(models.Model):
         else:
             return u'Не оформлен'
     get_status.short_description = u'Статус заказа'
+
+    def get_form_data(self):
+        from basket.forms import OrderForm
+        result = {}
+        for field_name, value in simplejson.loads(self.form_data).iteritems():
+            result.update({
+                field_name: (value, OrderForm.base_fields[field_name].label),
+            })
+        return result
+
 
     def __unicode__(self):
         return 'order #%s' % self.id
