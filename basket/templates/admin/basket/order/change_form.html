@@ -28,11 +28,10 @@
     {% for item in original.items.all %}
       <div class="form-row">
           <div class="field">
-            <label for="item_{{ forloop.counter }}">{{ item.content_object }}</label>
-            <input id="item_{{ forloop.counter }}" type="text" value="{{ item.quantity }}" disabled="disabled" />
+              <label for="item_{{ forloop.counter }}">{{ item.content_object }}</label> - {{ item.quantity }} шт.
             
               <p class="help">
-              <span>Сумма: {{ item.get_price }}</span>
+              <p>Сумма: {{ item.get_price }}</p>
               {% if item.content_object.get_absolute_url %}
               <a href="{{ item.content_object.get_absolute_url }}" target="_blank">ссылка на {{ item.content_type }}</a>
               {% endif %}

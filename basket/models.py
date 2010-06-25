@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django import forms
-from datetime import datetime
-from decimal import Decimal
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
-from basket.settings import PRICE_ATTR
-from basket.utils import resolve_uid
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.utils import simplejson
+from django.contrib.admin.models import LogEntry
+from datetime import datetime
+from decimal import Decimal
+from basket.settings import PRICE_ATTR
+from basket.utils import resolve_uid
 
 
 class Status(models.Model):
@@ -30,11 +31,12 @@ class OrderStatus(models.Model):
         verbose_name_plural = u'Статусы заказа'
         ordering = ['date']
 
-    type = models.ForeignKey('Status')
+    type = models.ForeignKey('Status', verbose_name=u'Тип статуса')
     order = models.ForeignKey('Order')
-    date = models.DateTimeField(default=lambda: datetime.now())
+    date = models.DateTimeField(default=lambda: datetime.now(), verbose_name=u'Дата')
     comment = models.CharField(max_length=100, verbose_name=u'Комментарий',
         blank=True, null=True)
+    user = models.ForeignKey('auth.User', verbose_name=u'Пользователь', null=True, blank=True)
 
     def __unicode__(self):
         return self.type.name
