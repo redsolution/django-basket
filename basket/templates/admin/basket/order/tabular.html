@@ -45,9 +45,9 @@
               <td class="{{ field.field.name }}">
               {{ field.field.errors.as_ul }}
               {{ field.field }}
-              {% if forloop.parentloop.first %}
-                ({{ original.user.first_name }} {{ original.user.last_name }} - {{ original.user.username }})
-              {% endif %}
+              {% ifequal field.field.name 'user' %}
+                ({{ inline_admin_form.original.user.first_name }} {{ inline_admin_form.original.user.last_name }} - {{ inline_admin_form.original.user }})
+              {% endifequal %}
               </td>
             {% endfor %}
           {% endfor %}

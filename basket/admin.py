@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from basket.models import Order, Status, OrderStatus
+from django import forms
 
+class StatusInlineForm(forms.ModelForm):
+    class Meta:
+        model = OrderStatus
+        fields = ('type', 'order', 'date', 'comment', 'user')
+    user = forms.CharField(label=u'Пользователь',
+        widget=forms.HiddenInput(attrs={'disabled': True}), required=False)
 
 class StatusInline(admin.TabularInline):
     model = OrderStatus
     extra = 1
-    fields = ('type', 'order', 'date', 'comment')
+    form = StatusInlineForm
+    fields = ('type', 'order', 'date', 'comment', 'user')
     template = 'admin/basket/order/tabular.html'
 
 
