@@ -29,6 +29,10 @@ class OrderAdmin(admin.ModelAdmin):
 
         # override: last edited user saved in user field
         for index, inline_form in enumerate(formset.forms):
+
+            if 'user' in inline_form.changed_data:
+                inline_form.changed_data.remove('user')
+
             if inline_form.changed_data:
                 formset.cleaned_data[index].update({'user': request.user})
 
