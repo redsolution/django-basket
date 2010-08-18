@@ -41,8 +41,6 @@ class OrderForm(extend_form_class, BaseOrderForm):
             'data': self.cleaned_data,
         })
 
-        print 'json:', simplejson.dumps(self.cleaned_data)
-
         self.instance.form_data = simplejson.dumps(self.cleaned_data)
         send_mail(u'Форма заказа', message,
             [manager[1] for manager in settings.MANAGERS])

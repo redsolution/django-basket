@@ -10,6 +10,7 @@ basket.add_to_basket = function add_to_basket(item_id) {
 	$.post('/basket/add/', {'item': item_id}, function (){
 		basket.reload_basket();
 	});
+	return false;
 };
 
 basket.reload_basket = function reload_basket() {
@@ -19,4 +20,5 @@ basket.reload_basket = function reload_basket() {
 	$('#basket_panel').load('/basket/ajax/', null, function(){
 		loading_div.hide();
 	});
+	return false;
 };
