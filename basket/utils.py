@@ -68,4 +68,5 @@ def import_item(path, error_text):
     try:
         return getattr(__import__(module, {}, {}, ['']), attr)
     except ImportError, e:
+        from django.core.exceptions import ImproperlyConfigured
         raise ImproperlyConfigured('Error importing %s %s: "%s"' % (error_text, path, e))
