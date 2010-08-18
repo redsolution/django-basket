@@ -21,7 +21,7 @@ class Migration(SchemaMigration):
 
         # Adding model 'OrderStatus'
         db.create_table('basket_orderstatus', (
-            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2010, 4, 2, 14, 19, 0, 913427))),
+            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now())),
             ('comment', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['basket.Status'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -40,15 +40,24 @@ class Migration(SchemaMigration):
         # Deleting field 'BasketItem.basket'
         db.delete_column('basket_basketitem', 'basket_id')
 
+        # Deleting field 'BasketItem.item'
+        db.delete_column('basket_basketitem', 'item_id')
+
+        # Adding field 'BasketItem.object_id'
+        db.add_column('basket_basketitem', 'object_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True))
+
+        # Adding field 'BasketItem.content_type'
+        db.add_column('basket_basketitem', 'content_type', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['contenttypes.ContentType']), keep_default=False)
+
         # Adding field 'BasketItem.order'
-        db.add_column('basket_basketitem', 'order', self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='items', to=orm['basket.Order']))
-    
-    
+        db.add_column('basket_basketitem', 'order', self.gf('django.db.models.fields.related.ForeignKey')(related_name='items', null=True, to=orm['basket.Order']), keep_default=False)
+
+
     def backwards(self, orm):
-        
+
         # Adding model 'Basket'
         db.create_table('basket_basket', (
-            ('delivered', self.gf('django.db.models.fields.NullBooleanField')(null=True)),
+            ('delivered', self.gf('django.db.models.fields.BooleanField')(null=True, blank=True)),
             ('session', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sessions.Session'], null=True, blank=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
             ('anonymous', self.gf('django.db.models.fields.BooleanField')(default=True, blank=True)),
@@ -68,12 +77,21 @@ class Migration(SchemaMigration):
         db.delete_table('basket_status')
 
         # Adding field 'BasketItem.basket'
-        db.add_column('basket_basketitem', 'basket', self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='items', to=orm['basket.Basket']))
+        db.add_column('basket_basketitem', 'basket', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['basket.Basket']), keep_default=False)
+
+        # Adding field 'BasketItem.item'
+        db.add_column('basket_basketitem', 'item', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['custom_catalog.Item']), keep_default=False)
+
+        # Deleting field 'BasketItem.object_id'
+        db.delete_column('basket_basketitem', 'object_id')
+
+        # Deleting field 'BasketItem.content_type'
+        db.delete_column('basket_basketitem', 'content_type_id')
 
         # Deleting field 'BasketItem.order'
         db.delete_column('basket_basketitem', 'order_id')
-    
-    
+
+
     models = {
         'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -109,7 +127,7 @@ class Migration(SchemaMigration):
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'order': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'items'", 'to': "orm['basket.Order']"}),
+            'order': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'items'", 'null': 'True', 'to': "orm['basket.Order']"}),
             'quantity': ('django.db.models.fields.IntegerField', [], {})
         },
         'basket.order': {
@@ -122,7 +140,7 @@ class Migration(SchemaMigration):
         'basket.orderstatus': {
             'Meta': {'object_name': 'OrderStatus'},
             'comment': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2010, 4, 2, 14, 19, 37, 974063)'}),
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now()'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'order': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['basket.Order']"}),
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['basket.Status']"})
