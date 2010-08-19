@@ -15,7 +15,7 @@ def show_basket(request):
     # otherwise, return page with empty basket message
     # in order to avoid to show basket with 0 goods
     # 1st place
-    if order.empty():
+    if order is None or order.empty():
         return {}
 
     if request.method == 'POST':
