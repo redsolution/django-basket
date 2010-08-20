@@ -215,12 +215,12 @@ class Order(models.Model):
     def get_form_data(self):
         from basket.forms import OrderForm
         result = {}
-        for field_name, value in simplejson.loads(self.form_data).iteritems():
-            result.update({
-                field_name: (value, OrderForm.base_fields[field_name].label),
-            })
+        if self.form_data:
+            for field_name, value in simplejson.loads(self.form_data).iteritems():
+                result.update({
+                    field_name: (value, OrderForm.base_fields[field_name].label),
+                })
         return result
-
 
     def __unicode__(self):
         return 'order #%s' % self.id
