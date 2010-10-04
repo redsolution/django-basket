@@ -24,6 +24,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['__unicode__', 'goods', 'price', 'get_status', 'registered', 'user']
     fieldsets = None
     list_filter = ['status', ]
+    search_fields = ('user__username',)
 
     def save_formset(self, request, form, formset, change):
 
