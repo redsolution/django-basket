@@ -1,0 +1,12 @@
+.installed.cfg
+.svn
+*.bat
+*.orig
+*.pyc
+*.sql
+*.swp
+.project
+.pydevproject
+.vimproject
+.ropeproject
+.settings
