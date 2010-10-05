@@ -9,9 +9,15 @@ from django.utils import simplejson
 from django.contrib.admin.models import LogEntry
 from datetime import datetime
 from decimal import Decimal
-from basket.settings import PRICE_ATTR
-from basket.utils import resolve_uid
+from basket.settings import PRICE_ATTR, BASKET_ORDERINFO
+from basket.utils import resolve_uid, import_item
+from django.core.exceptions import ImproperlyConfigured
 
+DELIVER_TYPE = (
+        ('undefined', 'Не установлен'),
+        ('town', 'До города'),
+        ('home', 'До дома'),
+    )
 
 class Status(models.Model):
     class Meta:
@@ -77,6 +83,7 @@ class OrderManager(models.Manager):
             Get or create order, linked to given user or session.
             uid - User instance or session key (str)
         '''
+        order_info_class = get_order_info_class()
         try:
             order = self.from_uid(uid).get(status__isnull=True)
         except Order.DoesNotExist:
@@ -84,6 +91,11 @@ class OrderManager(models.Manager):
                 order = self.create_from_uid(uid)
             else:
                 order = None
+        if order:
+            try:
+                order.orderinfo
+            except order_info_class.DoesNotExist:
+                order_info_class.objects.create(order=order)
         return order
 
     def get_last(self, uid):
@@ -225,6 +237,46 @@ class Order(models.Model):
     def __unicode__(self):
         return 'order #%s' % self.id
 
+class OrderInfo(models.Model):
+    order = models.OneToOneField(Order)
+    registered = models.DateTimeField(verbose_name=u'Дата и время поступления', auto_now_add=True)
+    fio = models.CharField(verbose_name=u'ФИО', max_length=100, blank=True,
+                           null=True)
+    email = models.CharField(verbose_name=u'e-mail', max_length=100, blank=True,
+                             null=True)
+    telephone = models.CharField(verbose_name=u'Телефон', max_length=100,
+                                 blank=True, null=True)
+    city = models.CharField(verbose_name=u'Город', max_length=100,
+                            blank=True, null=True)
+    address = models.CharField(verbose_name=u'Адрес доставки', max_length=100,
+                              blank=True, null=True)
+    contact_time = models.CharField(verbose_name=u'Удобное время для связи',
+            max_length=100, blank=True, null=True)
+    discount = models.IntegerField(verbose_name=u'Накопленная скидка',
+                                   blank=True, null=True)
+    trans_company = models.CharField(verbose_name=u'Транспортная компания',
+        max_length=10, blank=True, null=True)
+    delivery_type = models.CharField(choices=DELIVER_TYPE, verbose_name=u'Тип доставки',
+        max_length=100, default='undefined')
+    delivery_cost = models.FloatField(verbose_name=u'Cтоимость доставки',
+            blank=True, null=True)
+    delivery_datetime = models.DateTimeField(verbose_name=u'Дата и время доставки',
+            blank=True, null=True)
+    notify = models.BooleanField(verbose_name=u'Оповестить перед доставкой', default=False)
+    comment = models.CharField(verbose_name=u'Комментарий', max_length=200,
+        blank=True, null=True)
+
+    class Meta:
+        verbose_name = u'Параметры заказа'
+        verbose_name_plural = u'Параметры заказа'
+
+def get_order_info_class():
+    try:
+        order_info_class = import_item(BASKET_ORDERINFO, 'Can not import BASKET_ORDERINFO')
+    except ImproperlyConfigured:
+        return OrderInfo
+    else:
+        return order_info_class
 
 class BasketItem(models.Model):
     class Meta:

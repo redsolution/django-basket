@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from basket.forms import OrderForm, OrderFormset, OrderStatusForm
 from basket.utils import render_to, get_order_from_request, create_order_from_request, uid_from_request
 from basket.models import Status, OrderStatus, Order
+from basket.forms import get_order_form
 
 
 @render_to('basket/basket.html')
@@ -69,10 +70,11 @@ def show_basket(request):
 def confirm(request):
     # do not create order automatically
     order = request.order
+    orderinfo = order.orderinfo
 
     if order:
         if request.method == 'POST':
-            form = OrderForm(request.POST, instance=order)
+            form = get_order_form()(request.POST, instance=orderinfo)
             if form.is_valid():
                 form.save()
                 first_status = Status.objects.all()[0]
@@ -80,7 +82,7 @@ def confirm(request):
                     comment=u'Онлайн заказ')
                 return HttpResponseRedirect(reverse('thankyou'))
         else:
-            form = OrderForm(instance=order)
+            form = get_order_form()(instance=orderinfo)
         return {'form': form, 'order': order}
 
 @render_to('basket/thankyou.html')
