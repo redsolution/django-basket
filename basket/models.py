@@ -12,6 +12,47 @@ from decimal import Decimal
 from basket.settings import PRICE_ATTR, BASKET_ORDERINFO
 from basket.utils import resolve_uid, import_item
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models.signals import post_save
+
+ACTION_CHOICES = (
+        ('communication', 'Общение с клиентом'),
+        ('forming', 'Формирование'),
+        ('delivery', 'Доставка'),
+        ('payment', 'Оплата'),
+    )
+
+STATE_CHOICES = (
+        ('wait', 'Ожидание'),
+        ('denied', 'Отказ'),
+        ('confirm', 'Подтверждение заказа'),
+        ('aligment', 'Согласование с клиентом'),
+        ('formed', 'Сформирован'),
+        ('intercity', 'Местная'),
+        ('sent_with_courier', 'Отправлено курьером'),
+        ('sent_in_company', 'Отправлено в транспортную компанию'),
+        ('delivered', 'Доставлено'),
+        ('full_payment', 'Полностью'),
+        ('partially_payment', 'Частично'),
+    )
+
+ACTION_AND_STATE_CHOICES = {
+    '':(('', '---------'),),
+    'communication':(
+        ('wait', 'Ожидание'),
+        ('denied', 'Отказ'),
+        ('confirm', 'Подтверждение заказа'),),
+    'forming':(
+        ('aligment', 'Согласование с клиентом'),
+        ('formed', 'Сформирован'),),
+    'delivery':(
+        ('sent_with_courier', 'Отправлено курьером'),
+        ('sent_in_company', 'Отправлено в транспортную компанию'),
+        ('delivered', 'Доставлено'),
+        ('denied', 'Отказ'),),
+    'payment':(
+        ('full_payment', 'Полностью'),
+        ('partially_payment', 'Частично'),),
+    }
 
 DELIVER_TYPE = (
         ('undefined', 'Не установлен'),
@@ -296,6 +337,40 @@ class BasketItem(models.Model):
     def get_sum(self):
         return self.get_price() * self.quantity
 
+class States(models.Model):
+    order = models.ForeignKey(Order)
+    action = models.CharField(choices=ACTION_CHOICES,
+        verbose_name=u'Действие', max_length=100)
+    state = models.CharField(choices=STATE_CHOICES,
+        verbose_name=u'Состояние', max_length=100)
+    comment = models.CharField(max_length=255, verbose_name=u'Комментарий',
+        blank=True, null=True)
+    modified = models.CharField(verbose_name=u'Изменен', max_length=100,
+                                blank=True, null=True)
+
+    class Meta:
+        verbose_name = u'Действия с заказом'
+        verbose_name_plural = u'Действия с заказом'
+
 def get_status_types():
     '''Return chioces for status field'''
     return [(st.id, st.name) for st in Status.objects.all()]
+
+def status_change(sender, instance, created, **kwargs):
+    u'''Change status on some states'''
+    state_change_status = {
+        'denied': u'отказ',
+        'delivered': u'завершён',
+        'confirm': u'на обработке',
+        }
+    status_name = u'новый'
+    states = instance.order.states_set.all().order_by('-id')
+    for state in states:
+        if state.state in state_change_status:
+            status_name = state_change_status[state.state]
+            break
+    if status_name != instance.order.get_status().name:
+        status = Status.objects.get(name=status_name)
+        OrderStatus.objects.create(order=instance.order, type=status)
+
+post_save.connect(status_change, sender=States)

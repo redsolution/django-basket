@@ -1,6 +1,37 @@
 {% extends "admin/change_form.html" %}
 {% load i18n admin_modify adminmedia %}
 
+{% block extrahead %}
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="text/javascript">
+    actions_with_states=jQuery.parseJSON('{{ actions_with_states|safe }}');
+	    $(document).ready(function(event){
+	      function change_states(element){
+	    	  var state_number = /\d+/.exec(element.id);
+          var select_action = element.value;
+	    	  var states=actions_with_states[select_action];
+	    	  var state_selected_value = $("#id_states_set-"+state_number+"-state :selected").val()	    	  
+	    	  $("#id_states_set-"+state_number+"-state").empty();
+	        for (i=0;i<states.length;i++){
+		        if (states[i][0] != state_selected_value){ 
+	           $("#id_states_set-"+state_number+"-state").append($('<option value="'+states[i][0]+'">'+states[i][1]+'</option>') );
+	          }
+		        else {
+		        	$("#id_states_set-"+state_number+"-state").append($('<option selected="selected" value="'+states[i][0]+'">'+states[i][1]+'</option>') );
+				    }
+	        }
+	    	}
+	      $("select").filter(
+	    	  function() {return this.id.match(/id_states_set-\d+-action/)}).each(
+	    	    	  function(index, el){change_states(this)})
+	    	    	  
+	    $("select").filter(function() {
+	        return this.id.match(/id_states_set-\d+-action/)}).bind('change', function(event){
+	        	  change_states(this)
+    	    });
+    })
+  </script>
+{% endblock %}
 {% block content %}<div id="content-main">
 {% block object-tools %}
 {% if change %}{% if not is_popup %}
