@@ -24,6 +24,7 @@ class StatusInline(admin.TabularInline):
 class OrderInfoInline(admin.StackedInline):
     model = get_order_info_class()
     extra = 1
+    can_add = False
 
 
 class StatesInlineFormset(BaseInlineFormSet):
@@ -39,9 +40,11 @@ class StatesInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderInfoInline, StatesInline]
     exclude = ['user', 'session', 'form_data']
-    list_display = ['__unicode__', 'goods', 'price', 'get_status', 'registered', 'user']
+    list_display = ['__unicode__', 'get_datetime', 'goods', 'price', 'user', 'get_phone', 'get_status', 'get_city', 'accepted', 'formed', 'paid', 'get_comment' ]
+    list_per_page = 50
     fieldsets = None
     list_filter = ['status', ]
+    list_select_related = True
     search_fields = ('user__username',)
 
     def get_urls(self):

@@ -167,7 +167,7 @@ class Order(models.Model):
         verbose_name = u'Заказ'
         verbose_name_plural = u'Заказы'
 
-    user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name=u'Пользователь', null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
     status = models.ManyToManyField('Status', through='OrderStatus')
     form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
@@ -265,6 +265,10 @@ class Order(models.Model):
             return u'Не оформлен'
     get_status.short_description = u'Статус заказа'
 
+    def get_city(self):
+        return self.orderinfo.city
+    get_city.short_description = u'Город'
+
     def get_form_data(self):
         from basket.forms import OrderForm
         result = {}
@@ -274,6 +278,45 @@ class Order(models.Model):
                     field_name: (value, OrderForm.base_fields[field_name].label),
                 })
         return result
+
+    def get_datetime(self):
+        return self.orderinfo.registered.strftime("%d/%m/%y %H:%M")
+    get_datetime.short_description = u'Зарегистрирован'
+
+    def get_comment(self):
+        states = self.states_set.all()
+        if states:
+            return states[0].comment
+        return None
+    get_comment.short_description = u'Примечание'
+
+    def accepted(self):
+        if self.states_set.filter(state='confirm'):
+            return True
+        else:
+            return False
+    accepted.short_description = u'Подт.'
+    accepted.boolean = True
+
+    def formed(self):
+        if self.states_set.filter(state='formed'):
+            return True
+        else:
+            return False
+    formed.short_description = u'Сформ.'
+    formed.boolean = True
+
+    def paid(self):
+        if self.states_set.filter(state='full_payment'):
+            return True
+        else:
+            return False
+    paid.short_description = u'Опл.'
+    paid.boolean = True
+
+    def get_phone(self):
+        return self.orderinfo.telephone
+    get_phone.short_description = u'Телефон'
 
     def __unicode__(self):
         return 'order #%s' % self.id
@@ -364,7 +407,7 @@ def status_change(sender, instance, created, **kwargs):
         'confirm': u'на обработке',
         }
     status_name = u'новый'
-    states = instance.order.states_set.all().order_by('-id')
+    states = instance.order.states_set.all()
     for state in states:
         if state.state in state_change_status:
             status_name = state_change_status[state.state]
