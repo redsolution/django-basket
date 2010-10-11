@@ -71,24 +71,6 @@ class Status(models.Model):
     def __unicode__(self):
         return self.name
 
-
-class OrderStatus(models.Model):
-    class Meta:
-        verbose_name = u'Статус заказа'
-        verbose_name_plural = u'Статусы заказа'
-        ordering = ['date']
-
-    type = models.ForeignKey('Status', verbose_name=u'Тип статуса')
-    order = models.ForeignKey('Order')
-    date = models.DateTimeField(default=lambda: datetime.now(), verbose_name=u'Дата')
-    comment = models.CharField(max_length=100, verbose_name=u'Комментарий',
-        blank=True, null=True)
-    user = models.ForeignKey('auth.User', verbose_name=u'Пользователь', null=True, blank=True)
-
-    def __unicode__(self):
-        return self.type.name
-
-
 class OrderManager(models.Manager):
     '''
     Custom manager for basket
@@ -148,7 +130,7 @@ class OrderManager(models.Manager):
         '''
         new_status = Status.objects.all()[0]
         last_queryset = self.from_uid(uid).filter(status=new_status
-            ).order_by('-orderstatus__date')
+            ).order_by('-id')
         if last_queryset.count():
             return last_queryset[0]
         else:
@@ -169,8 +151,8 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, verbose_name=u'Пользователь', null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-    status = models.ManyToManyField('Status', through='OrderStatus')
     form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
+    status = models.ForeignKey(Status, blank=True, null=True)
 
     objects = OrderManager()
 
@@ -257,13 +239,6 @@ class Order(models.Model):
             return self.user
         else:
             return self.session
-
-    def get_status(self):
-        if self.orderstatus_set.count():
-            return self.orderstatus_set.latest('date').type
-        else:
-            return u'Не оформлен'
-    get_status.short_description = u'Статус заказа'
 
     def get_city(self):
         return self.orderinfo.city
@@ -408,12 +383,14 @@ def status_change(sender, instance, created, **kwargs):
         }
     status_name = u'новый'
     states = instance.order.states_set.all()
+    order = instance.order
     for state in states:
         if state.state in state_change_status:
             status_name = state_change_status[state.state]
             break
-    if status_name != instance.order.get_status().name:
+    if not order.status or status_name != order.status.name:
         status = Status.objects.get(name=status_name)
-        OrderStatus.objects.create(order=instance.order, type=status)
+        order.status = status
+        order.save()
 
 post_save.connect(status_change, sender=States)

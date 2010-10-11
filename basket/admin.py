@@ -1,25 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from basket.models import Order, Status, OrderStatus, States, \
+from basket.models import Order, Status, States, \
     get_order_info_class, ACTION_AND_STATE_CHOICES
 from django import forms
 from django.forms.models import BaseInlineFormSet
 import json
 import datetime
-
-class StatusInlineForm(forms.ModelForm):
-    class Meta:
-        model = OrderStatus
-        fields = ('type', 'order', 'date', 'comment', 'user')
-    user = forms.CharField(label=u'Пользователь',
-        widget=forms.HiddenInput(attrs={'disabled': True}), required=False)
-
-class StatusInline(admin.TabularInline):
-    model = OrderStatus
-    extra = 1
-    form = StatusInlineForm
-    fields = ('type', 'order', 'date', 'comment', 'user')
-    template = 'admin/basket/order/tabular.html'
 
 class OrderInfoInline(admin.StackedInline):
     model = get_order_info_class()
@@ -40,7 +26,7 @@ class StatesInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderInfoInline, StatesInline]
     exclude = ['user', 'session', 'form_data']
-    list_display = ['__unicode__', 'get_datetime', 'goods', 'price', 'user', 'get_phone', 'get_status', 'get_city', 'accepted', 'formed', 'paid', 'get_comment' ]
+    list_display = ['__unicode__', 'get_datetime', 'goods', 'price', 'user', 'get_phone', 'status', 'get_city', 'accepted', 'formed', 'paid', 'get_comment' ]
     list_per_page = 50
     fieldsets = None
     list_filter = ['status', ]
@@ -73,6 +59,10 @@ class OrderAdmin(admin.ModelAdmin):
                 formset.cleaned_data[index].update({'modified': "%s %s" % (request.user.username, datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S"))})
 
         return super(OrderAdmin, self).save_formset(request, form, formset, change)
+
+    def queryset(self, request):
+        qs = super(OrderAdmin, self).queryset(request)
+        return qs.filter(status__isnull=False)
 
 try:
     admin.site.register(Order, OrderAdmin)
