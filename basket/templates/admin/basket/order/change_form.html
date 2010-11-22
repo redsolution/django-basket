@@ -44,8 +44,11 @@
       <div class="form-row">
       <h3>Сумма заказа: {{ original.price }}<br/> Количество товаров: {{ original.goods }}</h3>
       </div>
-      <div class="form-row">
-      </div>
+      {% if original.user %}
+	      <div class="form-row">
+	        <a href='../?q={{ original.user.username }}'>История заказов</a>
+	      </div>
+      {% endif %}
 </fieldset>
 {% endblock %}
 
