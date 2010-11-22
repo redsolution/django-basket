@@ -23,8 +23,8 @@
 {% block after_field_sets %}
 <fieldset class="module aligned">
   <h2><div class="description">Онлайн-заказ #<strong>{{ original.id }}<strong></div></h2>
-  <h3><div>Дата заказа: {{ original.orderinfo.registration_date|date:"d/m/y" }}</div>
-  <div>Время заказа: {{ original.orderinfo.registration_date|time:"H:i" }}</div></h3>
+  <h3><div>Дата заказа: {{ original.orderinfo.registered|date:"d/m/y" }}</div>
+  <div>Время заказа: {{ original.orderinfo.registered|time:"H:i" }}</div></h3>
     <table>
     <th>№</th>
     <th>Наименование</th>
@@ -46,6 +46,7 @@
       </div>
       {% if original.user %}
 	      <div class="form-row">
+	        <div>ID пользователя: {{ original.user.id }}</div>
 	        <a href='../?q={{ original.user.username }}'>История заказов</a>
 	      </div>
       {% endif %}
