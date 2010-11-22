@@ -241,6 +241,9 @@ class BasketItem(models.Model):
     def get_price(self):
         return getattr(self.content_object, PRICE_ATTR)
 
+    def get_sum(self):
+        return self.get_price() * self.quantity
+
 def get_status_types():
     '''Return chioces for status field'''
     return [(st.id, st.name) for st in Status.objects.all()]

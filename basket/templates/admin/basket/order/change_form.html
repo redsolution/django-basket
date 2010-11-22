@@ -22,34 +22,29 @@
 
 {% block after_field_sets %}
 <fieldset class="module aligned">
-  <h2>{{ original }}</h2>
-  <div class="description">Онлайн-заказ #<strong>{{ original.id }}<strong></div>
-    
+  <h2><div class="description">Онлайн-заказ #<strong>{{ original.id }}<strong></div></h2>
+  <h3><div>Дата заказа: {{ original.orderinfo.registration_date|date:"d/m/y" }}</div>
+  <div>Время заказа: {{ original.orderinfo.registration_date|time:"H:i" }}</div></h3>
+    <table>
+    <th>№</th>
+    <th>Наименование</th>
+    <th>Количество</th>
+    <th>Цена</th>
+    <th>Сумма</th>
     {% for item in original.items.all %}
-      <div class="form-row">
-          <div class="field">
-              <label for="item_{{ forloop.counter }}">{{ item.content_object }}</label> - {{ item.quantity }} шт.
-            
-              <p class="help">
-              <p>Сумма: {{ item.get_price }}</p>
-              {% if item.content_object.get_absolute_url %}
-              <a href="{{ item.content_object.get_absolute_url }}" target="_blank">ссылка на {{ item.content_type }}</a>
-              {% endif %}
-              </p>
-          </div>
-      </div>
+      <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ item.content_object }}</td>
+      <td style="text-align:center">{{ item.quantity }}</td>
+      <td>{{ item.get_price }}</td>
+      <td>{{ item.get_sum }}</td>
+      <tr>
     {% endfor %}
+    </table>
       <div class="form-row">
       <h3>Сумма заказа: {{ original.price }}<br/> Количество товаров: {{ original.goods }}</h3>
       </div>
       <div class="form-row">
-      <h3>Данные о заказе:</h3>
-        {% for key, value in original.get_form_data.iteritems %}
-            <p>
-            <strong>{{ value.1 }}:</strong>
-            {{ value.0 }}
-            </p>
-        {% endfor %}
       </div>
 </fieldset>
 {% endblock %}
