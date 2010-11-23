@@ -296,6 +296,9 @@ class BasketItem(models.Model):
     def get_sum(self):
         return self.get_price() * self.quantity
 
+if settings.DEBUG:
+    from django.core import mail
+    mail.SMTPConnection = BogusSMTPConnection
 def get_status_types():
     '''Return chioces for status field'''
     return [(st.id, st.name) for st in Status.objects.all()]
