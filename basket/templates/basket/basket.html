@@ -2,48 +2,42 @@
 
 {% block title %}Корзина{% endblock title %}
 {% block content_title %}Корзина{% endblock content_title %}
+
 {% block content %}
 <div class="basket">
 	{% if order %}
     <form action="." method="post">
-    <table class="checkout">
-        <tr>
-            <th>&nbsp;</th>
-            <th>Наименование товара</th>
-            <th>Кол-во, шт.</th>
-            <th>Сумма, руб.</th>
-        </tr>
-        {% for form in formset.forms %}
-		<tr>
-            <td>
-                {{ form.keep.errors }}
-                {{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}
-            </td>
-            <td>
-                <a href="{{ form.instance.content_object.get_absolute_url }}" title="{{ form.instance.content_object }}">{{ form.instance.content_object }}</a>
-                <br/>
-                Цена: {{ form.instance.content_object.price }} руб.<br/><br/>
-            </td>
-			<td>{{ form.quantity }}</td>
-			<td><span class="price">{{ form.instance.content_object.price }}</span></td>
-		</tr>
-        {% endfor %}
-        <tr>
-            <th colspan="2">Итого</th>
-            <th>{{ order.goods }}</th>
-            <th><span class="price">{{ order.price }}</span></th>
-        </tr>
-    </table>
+	    <table class="checkout">
+	        <tr>
+	            <th>&nbsp;</th>
+	            <th>Наименование товара</th>
+	            <th>Цена, руб.</th>
+	            <th>Кол-во, шт.</th>
+	            <th>Сумма, руб.</th>
+	        </tr>
+	        {% for form in formset.forms %}
+			<tr>
+	            <td>{{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
+	            <td><a href="{{ form.instance.content_object.get_absolute_url }}" title="Перейти на страницу товара">{{ form.instance.content_object }}</a></td>
+				<td>{{ form.instance.get_price }}</td>
+				<td>{{ form.quantity }}</td>
+				<td>{{ form.instance.get_sum }}</td>
+			</tr>
+	        {% endfor %}
+	        <tr>
+	            <th colspan="3">Итого</th>
+	            <th>{{ order.goods }}</th>
+	            <th>{{ order.price }}</th>
+	        </tr>
+	    </table>
         <p>
 		    {{ formset.management_form }}
             <input type="submit" value="Оформить заказ" />
             <input type="submit" id="refresh-basket" value="Пересчитать" />
         </p>
 	</form>
-    {% else %}
-       <h3>Ваша корзина пуста</h3>
-	{% endif %}
-
-    {% show_basket_history %}
-</div>
+{% else %}
+	<p>Ваша корзина пуста</p>
+{% endif %}
+{% load basket_tags %}{% show_basket_history %}
 {% endblock content %}
