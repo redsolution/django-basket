@@ -42,7 +42,7 @@ def basket(request):
             if order.empty():
                 return {}
 
-            if 'ajax' in request.POST:
+            if 'refresh' in request.POST:
                 # ajax basket update
                 formset = OrderFormset(instance=order)
                 # empty basket condition
@@ -55,7 +55,7 @@ def basket(request):
                         'order': order
                     }
             else:
-                return HttpResponseRedirect(reverse('confirm'))
+                return HttpResponseRedirect(reverse('order_confirm'))
 
     else:
         formset = OrderFormset(instance=order)

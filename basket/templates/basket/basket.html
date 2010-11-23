@@ -7,8 +7,8 @@
 <script type="text/javascript">
 <!--
 $(document).ready(function() {
-	$('#refresh-basket').click(function() {
-		$(this).after('<input type="hidden" name="ajax" value="1">');
+	$('#basket-refresh').click(function() {
+		$(this).after('<input type="hidden" name="refresh" value="1" />');
 	});
 });
 //-->
@@ -41,7 +41,7 @@ $(document).ready(function() {
         <p>
 		    {{ formset.management_form }}
             <input type="submit" value="Оформить заказ" />
-            <input type="submit" id="refresh-basket" value="Пересчитать" />
+            <input type="submit" id="basket-refresh" value="Пересчитать" />
         </p>
 	</form>
 {% else %}
