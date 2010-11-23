@@ -77,7 +77,6 @@ class ContactForm(forms.ModelForm):
 class OrderStatusForm(forms.Form):
     order_id = forms.IntegerField(label=u'Номер закза')
 
-
 class BasketItemForm(forms.ModelForm):
     class Meta:
         model = BasketItem
@@ -88,5 +87,5 @@ class BasketItemForm(forms.ModelForm):
     object_id = forms.IntegerField(widget=forms.HiddenInput)
     keep = forms.BooleanField(initial=True, required=False)
 
-OrderFormset = inlineformset_factory(Order, BasketItem, extra=0, max_num=10,
+OrderFormset = inlineformset_factory(Order, BasketItem, extra=0,
     can_delete=False, form=BasketItemForm)
