@@ -1,8 +1,9 @@
 {% extends "basket/base.html" %}
 
+{% block title %}Корзина{% endblock title %}
+{% block content_title %}Корзина{% endblock content_title %}
 {% block content %}
 <div class="basket">
-    <h3>Корзина</h3>
 	{% if order %}
     <p>В корзине всего {{ order.goods }} товаров на сумму {{ order.price }} руб.</p>
     <form action="." method="post">

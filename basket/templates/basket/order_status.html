@@ -1,8 +1,10 @@
 {% extends "basket/base.html" %}
 
+{% block title %}Отслеживание заказа{% endblock title %}
+{% block content_title %}Отслеживание заказа{% endblock content_title %}
+
 {% block content %}
 <div class="basket">
-    <h3>Отслеживание заказа</h3>
     {% if form %}
     <form action="." method="post">
         {{ form.as_p }}
