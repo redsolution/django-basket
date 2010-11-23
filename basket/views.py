@@ -121,14 +121,13 @@ def add_to_basket(request):
     else:
         order = request.order
 
-    if 'item' in request.REQUEST:
-        item_id = request.REQUEST.get('item', None)
-        content_type_id, object_id = item_id.split('-')[1:]
-
+    content_type_id = request.REQUEST.get('content_type', None)
+    object_id = request.REQUEST.get('object_id', None)
+    try:
         content_type = ContentType.objects.get(id=content_type_id)
         item = content_type.get_object_for_this_type(id=object_id)
+    except ObjectDoesNotExist:
+        raise Http404
 
-        order.add_item(item)
-        return {'order': order}
-    else:
-        return HttpResponseServerError('Incorrect request')
+    order.add_item(item)
+    return {'order': order}

@@ -1,8 +1,8 @@
 <script type="text/javascript">
 <!--
-function add_to_basket(item_id) {
+function add_to_basket(content_type, object_id) {
 	$('#basket-is-loading').show();
-	$.post('{% url add_to_basket %}', {'item': item_id}, function (data) {
+	$.post('{% url add_to_basket %}', {'content_type': content_type, 'object_id': object_id}, function (data) {
 		$('#basket-is-loading').hide();
 		$('#basket-summary').html(data);
 	});
