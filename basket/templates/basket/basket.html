@@ -4,8 +4,7 @@
 {% block content_title %}Корзина{% endblock content_title %}
 
 {% block content %}
-<div class="basket">
-	{% if order %}
+{% if order %}
     <form action="." method="post">
 	    <table class="checkout">
 	        <tr>

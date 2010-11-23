@@ -4,7 +4,6 @@
 {% block content_title %}Отслеживание заказа{% endblock content_title %}
 
 {% block content %}
-<div class="basket">
     {% if form %}
     <form action="." method="post">
         {{ form.as_p }}
@@ -28,7 +27,4 @@
         Заказа с номером {{ order_id }} не сущеcтвует. Проверьте правильность ввода
         {% endif %}
     {% endif %}
-    
-</div>
-
 {% endblock %}
