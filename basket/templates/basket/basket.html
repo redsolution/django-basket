@@ -5,16 +5,9 @@
 {% block content %}
 <div class="basket">
 	{% if order %}
-    <p>В корзине всего {{ order.goods }} товаров на сумму {{ order.price }} руб.</p>
     <form action="." method="post">
     {{ formset.management_form }}
     <table class="checkout">
-        <colgroup>
-            <col />
-            <col />
-            <col />
-            <col />
-        </colgroup>
         <tr>
             <th>&nbsp;</th>
             <th>Наименование товара</th>
