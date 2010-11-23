@@ -6,12 +6,15 @@
 {% block content %}
     {% if order %}
     <form action="." method="post">
-        {{ form.as_ul }}
-        <input type="button" class="submit" value="Назад" onclick="document.location = ('{% url basket %}')"/>
-        <input type="submit" class="submit" value="Заказать" />
+	<table>
+		{{ form }}
+		<tr><td colspan="2">
+			<input type="button" class="submit" value="Назад" onclick="document.location = '{% url basket %}';"/>
+			<input type="submit" class="submit" value="Заказать" />
+		</td></tr>
+	</table>
     </form>
     {% else %}
     <h3>Ваша корзина пуста</h3>
     {% endif %}
-
 {% endblock %}

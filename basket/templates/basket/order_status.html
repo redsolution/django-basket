@@ -5,26 +5,27 @@
 
 {% block content %}
     {% if form %}
-    <form action="." method="post">
-        {{ form.as_p }}
-        <input type="submit" class="submit" value="отправить" />
-    </form>
+	    <form action="." method="post">
+			<table>
+				{{ form }}
+				<tr><td colspan="2"><input type="submit" class="submit" value="Отправить" /></td></tr>
+			</table>
+	    </form>
     {% endif %}
 
     {% if status %}
-        Статус заказа {{ status }}
-        
+        <p>Статус заказа: {{ status }}</p>
         {% if history %}
-        История изменений:
-        <ul>
-        {% for orderstatus in history %}
-            <li>{{ orderstatus }} от {{ orderstatus.date|date:"Y m d" }}</li>
-        {% endfor %}
-        </ul>
+	        <p>История изменений:</p>
+	        <ul>
+	        {% for orderstatus in history %}
+	            <li>{{ orderstatus.date|date:"Y/m/d" }}: {{ orderstatus }}</li>
+	        {% endfor %}
+	        </ul>
         {% endif %}
     {% else %}
         {% if order_id %}
-        Заказа с номером {{ order_id }} не сущеcтвует. Проверьте правильность ввода
+        	Заказа с номером {{ order_id }} не сущеcтвует. Проверьте правильность ввода.
         {% endif %}
     {% endif %}
 {% endblock %}
