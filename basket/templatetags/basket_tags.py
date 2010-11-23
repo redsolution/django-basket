@@ -6,9 +6,11 @@ from decimal import Decimal
 
 register = template.Library()
 
-
-@register.inclusion_tag('basket/basket_history.html', takes_context=True)
+@register.inclusion_tag('basket/history.html', takes_context=True)
 def show_basket_history(context):
+    """
+    Show history.
+    """
     request = context.get('request', None)
     if request:
         history = Order.objects.history(uid_from_request(request))

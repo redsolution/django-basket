@@ -7,9 +7,8 @@ from basket.utils import render_to, get_order_from_request, create_order_from_re
 from basket.models import Status, OrderStatus, Order
 from basket.forms import get_order_form
 
-
 @render_to('basket/basket.html')
-def show_basket(request):
+def basket(request):
     # do not create order automatically
     order = request.order
     # there are four places where we check that basket is not empty
@@ -90,8 +89,8 @@ def thankyou(request):
     order = Order.objects.get_last(uid_from_request(request))
     return {'order': order}
 
-@render_to('basket/order_status.html')
-def order_status(request):
+@render_to('basket/status.html')
+def status(request):
     if request.method == 'POST':
         form = OrderStatusForm(request.POST)
         if form.is_valid():
