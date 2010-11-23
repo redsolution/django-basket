@@ -1,3 +1,22 @@
+<script type="text/javascript">
+<!--
+var basket={};
+basket.add_to_basket = function add_to_basket(item_id) {
+	$.post('/basket/add/', {'item': item_id}, function (){
+		basket.reload_basket();
+	});
+	return false;
+};
+
+basket.reload_basket = function reload_basket() {
+  $('#basket-is-loading').show();
+	$('#basket-summary').load('/basket/ajax/', null, function(){
+    $('#basket-is-loading').hide();
+	});
+	return false;
+};
+//-->
+</script>
 <div id="basket-panel">
     <div id="basket-is-loading" style="display: none;"><img src="/media/basket/img/ajax-loader.gif" /></div>
     <div id="basket-summary">{% include 'basket/basket_panel.html' %}</div>

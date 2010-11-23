@@ -4,6 +4,15 @@
 {% block content_title %}Корзина{% endblock content_title %}
 
 {% block content %}
+<script type="text/javascript">
+<!--
+$(document).ready(function() {
+	$('#refresh-basket').click(function() {
+		$(this).after('<input type="hidden" name="ajax" value="1">');
+	});
+});
+//-->
+</script>
 {% if order %}
     <form action="." method="post">
 	    <table class="checkout">
