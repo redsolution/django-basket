@@ -82,6 +82,11 @@ def confirm(request):
             first_status = Status.objects.all()[0]
             OrderStatus.objects.create(order=order, type=first_status,
                 comment=u'Онлайн заказ')
+            message = loader.render_to_string('basket/order.txt', {
+                'order': order,
+            })
+            send_mail(u'Форма заказа', message,
+                [manager[1] for manager in settings.MANAGERS])
             return HttpResponseRedirect(reverse('order_thankyou'))
     else:
         form = get_order_form()(instance=order.orderinfo)

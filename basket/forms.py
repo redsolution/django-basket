@@ -31,23 +31,6 @@ def get_order_form():
     else:
         return form_class
 
-#extend_form_class = import_item(BASKET_FORM, 'Can not import BASKET_FORM')
-#
-#
-#class OrderForm(extend_form_class, BaseOrderForm):
-#
-#    def save(self, *args, **kwds):
-#        message = loader.render_to_string('basket/order.txt', {
-#            'order': self.instance,
-#            'data': self.cleaned_data,
-#        })
-#
-#        self.instance.form_data = simplejson.dumps(self.cleaned_data)
-#        send_mail(u'Форма заказа', message,
-#            [manager[1] for manager in settings.MANAGERS])
-#        return super(OrderForm, self).save(*args, **kwds)
-
-
 class OrderStatusForm(forms.Form):
     order_id = forms.IntegerField(label=u'Номер закза')
 
