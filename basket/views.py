@@ -114,6 +114,7 @@ def order_status(request):
 
 # ajax views
 
+@render_to('basket/summary.html')
 def add_to_basket(request):
     if request.order is None:
         order = create_order_from_request(request)
@@ -128,6 +129,6 @@ def add_to_basket(request):
         item = content_type.get_object_for_this_type(id=object_id)
 
         order.add_item(item)
-        return HttpResponse('OK')
+        return {'order': order}
     else:
         return HttpResponseServerError('Incorrect request')
