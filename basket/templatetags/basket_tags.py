@@ -21,6 +21,12 @@ def show_basket_history(context):
             history_sum = Decimal('0.00')
     return locals()
 
+@register.inclusion_tag('basket/panel.html', takes_context=True)
+def show_basket_panel(context):
+    """
+    Show basket panel.
+    """
+    return {}
 
 @register.inclusion_tag('basket/button.html')
 def add_basket_button(object):
