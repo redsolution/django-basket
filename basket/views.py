@@ -77,6 +77,7 @@ def confirm(request):
         form = get_order_form()(request.POST, instance=order.orderinfo)
         if form.is_valid():
             orderinfo = form.save(commit=False)
+            orderinfo.registered = datetime.datetime.now()
             orderinfo.save()
             first_status = Status.objects.all()[0]
             OrderStatus.objects.create(order=order, type=first_status,

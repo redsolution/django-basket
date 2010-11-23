@@ -23,12 +23,6 @@ class OrderForm(forms.ModelForm):
         exclude = ('order', 'trans_company', 'delivery_type', 'delivery_cost',
                    'delivery_datetime')
 
-    def save(self, **kwds):
-        orderinfo = super(OrderForm, self).save(**kwds)
-        orderinfo.registered = datetime.datetime.now()
-        orderinfo.save()
-        return orderinfo
-
 def get_order_form():
     try:
         form_class = import_item(BASKET_FORM, 'Can not import BASKET_FORM')
