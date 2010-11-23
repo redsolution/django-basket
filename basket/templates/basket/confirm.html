@@ -4,7 +4,6 @@
 {% block content_title %}Оформление заказа{% endblock content_title %}
 
 {% block content %}
-    {% if order %}
     <form action="." method="post">
 	<table>
 		{{ form }}
@@ -14,7 +13,4 @@
 		</td></tr>
 	</table>
     </form>
-    {% else %}
-    <h3>Ваша корзина пуста</h3>
-    {% endif %}
 {% endblock %}

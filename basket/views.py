@@ -69,20 +69,23 @@ def basket(request):
 def confirm(request):
     # do not create order automatically
     order = request.order
-    orderinfo = order.orderinfo
 
-    if order:
-        if request.method == 'POST':
-            form = get_order_form()(request.POST, instance=orderinfo)
-            if form.is_valid():
-                form.save()
-                first_status = Status.objects.all()[0]
-                OrderStatus.objects.create(order=order, type=first_status,
-                    comment=u'Онлайн заказ')
-                return HttpResponseRedirect(reverse('thankyou'))
-        else:
-            form = get_order_form()(instance=orderinfo)
-        return {'form': form, 'order': order}
+    if order is None or order.empty():
+        return HttpResponseRedirect(reverse('basket'))
+    
+    if request.method == 'POST':
+        form = get_order_form()(request.POST, instance=order.orderinfo)
+        if form.is_valid():
+            orderinfo = form.save(commit=False)
+            orderinfo.save()
+            first_status = Status.objects.all()[0]
+            OrderStatus.objects.create(order=order, type=first_status,
+                comment=u'Онлайн заказ')
+            return HttpResponseRedirect(reverse('order_thankyou'))
+    else:
+        form = get_order_form()(instance=order.orderinfo)
+    return {'form': form, 'order': order}
+    
 
 @render_to('basket/thankyou.html')
 def thankyou(request):
