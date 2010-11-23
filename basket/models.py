@@ -51,7 +51,7 @@ class OrderStatus(models.Model):
 class OrderManager(models.Manager):
     '''
     Custom manager for basket
-    methods: 
+    methods:
         TODO: methods
     '''
 
@@ -129,7 +129,6 @@ class Order(models.Model):
     user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
     status = models.ManyToManyField('Status', through='OrderStatus')
-    form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
 
     objects = OrderManager()
 
@@ -224,20 +223,14 @@ class Order(models.Model):
             return u'Не оформлен'
     get_status.short_description = u'Статус заказа'
 
-    def get_form_data(self):
-        from basket.forms import OrderForm
-        result = {}
-        if self.form_data:
-            for field_name, value in simplejson.loads(self.form_data).iteritems():
-                result.update({
-                    field_name: (value, OrderForm.base_fields[field_name].label),
-                })
-        return result
-
     def __unicode__(self):
         return 'order #%s' % self.id
 
 class OrderInfo(models.Model):
+    '''
+    Order information model. If you want to override default fields, set BASKET_MODEL in settings.py.
+    For more information check default settings in basket/settings.py
+    '''
     order = models.OneToOneField(Order)
     registered = models.DateTimeField(verbose_name=u'Дата и время поступления', auto_now_add=True)
     fio = models.CharField(verbose_name=u'ФИО', max_length=100, blank=True,
