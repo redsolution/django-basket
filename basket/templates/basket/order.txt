@@ -1,10 +1,14 @@
-===Заказ #{{ basket.id|stringformat:"06d" }}===
-{% for basketitem in basket.items.all %}
-    {{ forloop.counter }}. {{ basketitem.content_object }} ({{ basketitem.quantity }} шт.)
+=== Заказ #{{ order.id|stringformat:"06d" }} от {{ order.orderinfo.registered|date:"d/m/y" }} ===
+{% for basketitem in order.items.all %}
+    {{ forloop.counter }}. {{ basketitem.content_object }}: {{ basketitem.get_price }} руб. * {{ basketitem.quantity }} шт. = {{ basketitem.get_sum }} руб.
 {% endfor %}
 
-===Данные о заказчике===
+Итого {{ order.goods }} товаров на сумму {{ order.summary }} руб.
 
-Телефон:                 {{ data.contact }}
-Удобное время для связи: {{ data.contact_time }}
-Адрес доставки:          {{ data.address }}
+=== Данные о заказчике ===
+
+ФИО:               {{ order.orderinfo.fio }}
+Электронная почта: {{ order.orderinfo.email }}
+Телефон:           {{ order.orderinfo.telephone }}
+Адрес:             {{ order.orderinfo.address }}
+Комментарии:       {{ order.orderinfo.comment }}
