@@ -11,17 +11,6 @@ from django.utils import simplejson
 from django.core.exceptions import ImproperlyConfigured
 import datetime
 
-
-#class BaseOrderForm(forms.ModelForm):
-#    '''
-#    Order basket form. If you want to override default fields,
-#    set BASKET_FORM in settings.py. Fields will be merged with 
-#    this base form. For more information check default settings
-#    in basket/settings.py
-#    '''
-#    class Meta:
-#        model = Order
-#        exclude = ('user', 'session', 'status', 'form_data')
 class OrderForm(forms.ModelForm):
     '''
     Order basket form. If you want to override default fields,
@@ -47,15 +36,6 @@ def get_order_form():
         return OrderForm
     else:
         return form_class
-
-
-class ContactForm(forms.ModelForm):
-    contact = forms.CharField(label=u'Ваш телефон', max_length=200)
-    contact_time = forms.CharField(label=u'Удобное время для связи с вами',
-        max_length=200, required=False)
-    address = forms.CharField(label=u'Адрес для доставки', max_length=200)
-    comment = forms.CharField(label=u'Комментарии', help_text='Поле не обязательное',
-       max_length=200, required=False)
 
 #extend_form_class = import_item(BASKET_FORM, 'Can not import BASKET_FORM')
 #

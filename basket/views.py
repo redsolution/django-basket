@@ -131,22 +131,3 @@ def add_to_basket(request):
         return HttpResponse('OK')
     else:
         return HttpResponseServerError('Incorrect request')
-
-
-def remove_from_basket(request):
-    if request.order is None:
-        order = get_order_from_request(request)
-    else:
-        order = request.order
-
-    if 'item' in request.REQUEST:
-        item_id = request.REQUEST.get('item', None)
-        content_type_id, object_id = item_id.split('-')[1:]
-
-        content_type = ContentType.objects.get(id=content_type_id)
-        item = content_type.get_object_for_this_type(id=object_id)
-
-        order.remove_item(item)
-        return HttpResponse('OK')
-    else:
-        return HttpResponseServerError('Incorrect request')
