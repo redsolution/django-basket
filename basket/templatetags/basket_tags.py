@@ -21,7 +21,11 @@ def show_basket_history(context):
             history_sum = Decimal('0.00')
     return locals()
 
-@register.simple_tag
-def basket_add(item):
-    ct = ContentType.objects.get_for_model(item)
-    return 'item-%s-%s' % (ct.id, item.id)
+
+@register.inclusion_tag('basket/button.html')
+def add_basket_button(object):
+    """
+    Add button to add specified object to the basket.
+    """
+    content_type = ContentType.objects.get_for_model(object)
+    return {'content_type': content_type, 'object': object, }
