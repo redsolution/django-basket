@@ -12,13 +12,10 @@ basket.add_to_basket = function add_to_basket(item_id) {
 	});
 	return false;
 };
-
 basket.reload_basket = function reload_basket() {
-	var loading_div = $('.loading').clone();
-	$('#basket_panel p').prepend(loading_div);
-	loading_div.show();
-	$('#basket_panel').load('/basket/ajax/', null, function(){
-		loading_div.hide();
+  $('#basket-is-loading').show();
+	$('#basket-summary').load('/basket/ajax/', null, function(){
+    $('#basket-is-loading').hide();
 	});
 	return false;
 };
