@@ -6,7 +6,6 @@
 <div class="basket">
 	{% if order %}
     <form action="." method="post">
-    {{ formset.management_form }}
     <table class="checkout">
         <tr>
             <th>&nbsp;</th>
@@ -18,7 +17,7 @@
 		<tr>
             <td>
                 {{ form.keep.errors }}
-                {{ form.keep }}
+                {{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}
             </td>
             <td>
                 <a href="{{ form.instance.content_object.get_absolute_url }}" title="{{ form.instance.content_object }}">{{ form.instance.content_object }}</a>
@@ -27,7 +26,6 @@
             </td>
 			<td>{{ form.quantity }}</td>
 			<td><span class="price">{{ form.instance.content_object.price }}</span></td>
-            {{ form.content_type }}{{ form.object_id }}{{ form.basket }}{{ form.id }}
 		</tr>
         {% endfor %}
         <tr>
@@ -37,6 +35,7 @@
         </tr>
     </table>
         <p>
+		    {{ formset.management_form }}
             <input type="submit" value="Оформить заказ" />
             <input type="submit" id="refresh-basket" value="Пересчитать" />
         </p>
