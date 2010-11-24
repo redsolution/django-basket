@@ -3,6 +3,11 @@
 {% block title %}Корзина{% endblock title %}
 {% block content_title %}Корзина{% endblock content_title %}
 
+{% block head %}
+<script type="text/javascript" src="/media/basket/js/jquery-1.4.2.min.js"></script>
+{{ block.super }}
+{% endblock %}
+
 {% block content %}
 <script type="text/javascript">
 <!--
