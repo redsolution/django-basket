@@ -71,12 +71,14 @@ class OrderManager(models.Manager):
     def create_from_uid(self, uid):
         '''
         Returns new order referenced to given uid: user id or session key
+        
+        Returns None if uid is not valid.
         '''
         kwargs = resolve_uid(uid)
         if len(kwargs):
             return self.get_query_set().create(**kwargs)
         else:
-            return self.get_empty_query_set()
+            return None
 
     def get_order(self, uid, create=False):
         '''
