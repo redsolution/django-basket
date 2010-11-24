@@ -22,7 +22,7 @@ class OrderInfoInline(admin.StackedInline):
     extra = 1
 
 class OrderAdmin(admin.ModelAdmin):
-    inlines = [OrderInfoInline, ]
+    inlines = [OrderInfoInline, StatusInline, ]
     exclude = ['user', 'session', 'form_data']
     list_display = ['__unicode__', 'goods', 'price', 'get_status', 'registered', 'user']
     fieldsets = None
