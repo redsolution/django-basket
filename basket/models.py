@@ -114,7 +114,7 @@ class OrderManager(models.Manager):
             return None
 
 
-    def history(self, uid):
+    def closed(self, uid):
         '''
         Returns closed orders of given user or session 
         '''
