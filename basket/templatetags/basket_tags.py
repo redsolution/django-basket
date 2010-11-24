@@ -13,7 +13,7 @@ def show_basket_history(context):
     """
     request = context.get('request', None)
     if request:
-        history = Order.objects.for_uid(uid_from_request(request))
+        history = Order.objects.from_uid(uid_from_request(request))
         last = Order.objects.get_last(uid_from_request(request))
         if history:
             history_sum = Decimal(sum([order.summary() for order in history]))

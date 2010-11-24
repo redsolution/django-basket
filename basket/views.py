@@ -15,7 +15,7 @@ from basket.forms import get_order_form
 def basket(request):
     # do not create order automatically
     order = request.order
-    # there are four places where we check that basket is not empty
+    # there are three places where we check that basket is not empty
     # otherwise, return page with empty basket message
     # in order to avoid to show basket with 0 goods
     # 1st place
@@ -31,36 +31,21 @@ def basket(request):
             return {}
 
         if formset.is_valid():
-            basket_items = formset.save()
+            formset.save()
 
-            for basket_item in basket_items:
-                order.set_quantity(basket_item.content_object, basket_item.quantity)
-            # remove items withuot checkboxes
             for form in formset.forms:
-                keep = form.cleaned_data.get('keep', True)
-                if not keep:
-                    order.remove_item(form.instance.content_object)
+                if not form.cleaned_data.get('keep', True):
+                    # remove items withuot checkboxes
+                    form.instance.quantity = 0
+                order.set_quantity(form.instance.content_object, form.instance.quantity)
             order.save()
 
             # 3rd place
             if order.empty():
                 return {}
 
-            if 'refresh' in request.POST:
-                # ajax basket update
-                formset = OrderFormset(instance=order)
-                # empty basket condition
-                # and 4th place
-                if len(formset.forms) == 0:
-                    return {}
-                else:
-                    return {
-                        'formset': formset,
-                        'order': order
-                    }
-            else:
+            if not 'refresh' in request.POST: 
                 return HttpResponseRedirect(reverse('order_confirm'))
-
     else:
         formset = OrderFormset(instance=order)
 
