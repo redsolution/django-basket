@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
+import datetime
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.contenttypes.models import ContentType
-from basket.forms import OrderForm, OrderFormset, OrderStatusForm
-from basket.utils import render_to, get_order_from_request, create_order_from_request, uid_from_request
+from django.template import loader
+from basket.forms import OrderFormset, OrderStatusForm
+from basket.utils import render_to, get_order_from_request, create_order_from_request, uid_from_request, send_mail
 from basket.models import Status, OrderStatus, Order
 from basket.forms import get_order_form
 

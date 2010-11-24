@@ -16,7 +16,7 @@ def show_basket_history(context):
         history = Order.objects.history(uid_from_request(request))
         last = Order.objects.get_last(uid_from_request(request))
         if history:
-            history_sum = Decimal(sum([order.price() for order in history]))
+            history_sum = Decimal(sum([order.summary() for order in history]))
         else:
             history_sum = Decimal('0.00')
     return locals()

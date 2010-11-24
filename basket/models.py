@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.utils import simplejson
-from django.contrib.admin.models import LogEntry
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from datetime import datetime
 from decimal import Decimal
-from basket.settings import PRICE_ATTR, BASKET_ORDERINFO
-from basket.utils import resolve_uid, import_item
-from django.core.exceptions import ImproperlyConfigured
+from basket.settings import PRICE_ATTR, BASKET_MODEL
+from basket.utils import resolve_uid, import_item, BogusSMTPConnection
 
 DELIVER_TYPE = (
         ('undefined', 'Не установлен'),
@@ -85,7 +83,7 @@ class OrderManager(models.Manager):
             Get or create order, linked to given user or session.
             uid - User instance or session key (str)
         '''
-        order_info_class = get_order_info_class()
+        order_model = get_order_model()
         try:
             order = self.from_uid(uid).get(status__isnull=True)
         except Order.DoesNotExist:
@@ -96,8 +94,8 @@ class OrderManager(models.Manager):
         if order:
             try:
                 order.orderinfo
-            except order_info_class.DoesNotExist:
-                order_info_class.objects.create(order=order)
+            except ObjectDoesNotExist:
+                order_model.objects.create(order=order)
         return order
 
     def get_last(self, uid):
@@ -195,19 +193,19 @@ class Order(models.Model):
         total_price = Decimal('0.0')
         for basket_item in self.items.all():
             try:
-                total_price += (basket_item.get_price() * basket_item.quantity)
+                total_price += basket_item.get_sum()
             except AttributeError:
                 pass
             total_goods += basket_item.quantity
-        return {'goods': total_goods, 'price': total_price}
+        return {'goods': total_goods, 'summary': total_price}
 
     def goods(self):
         return self.calculate()['goods']
     goods.short_description = u'Кол-во товаров'
 
-    def price(self):
-        return self.calculate()['price']
-    price.short_description = u'Сумма'
+    def summary(self):
+        return self.calculate()['summary']
+    summary.short_description = u'Сумма'
 
     def empty(self):
         return self.goods() == 0
@@ -265,13 +263,13 @@ class OrderInfo(models.Model):
         verbose_name = u'Параметры заказа'
         verbose_name_plural = u'Параметры заказа'
 
-def get_order_info_class():
+def get_order_model():
     try:
-        order_info_class = import_item(BASKET_ORDERINFO, 'Can not import BASKET_ORDERINFO')
+        order_model = import_item(BASKET_MODEL, 'Can not import BASKET_MODEL')
     except ImproperlyConfigured:
         return OrderInfo
     else:
-        return order_info_class
+        return order_model
 
 class BasketItem(models.Model):
     class Meta:

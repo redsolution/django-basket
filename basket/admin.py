@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from basket.models import Order, Status, OrderStatus, get_order_info_class
+from basket.models import Order, Status, OrderStatus, get_order_model
 from django import forms
 
 class StatusInlineForm(forms.ModelForm):
@@ -18,13 +18,13 @@ class StatusInline(admin.TabularInline):
     template = 'admin/basket/order/tabular.html'
 
 class OrderInfoInline(admin.StackedInline):
-    model = get_order_info_class()
+    model = get_order_model()
     extra = 1
 
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderInfoInline, StatusInline, ]
     exclude = ['user', 'session', 'form_data']
-    list_display = ['__unicode__', 'goods', 'price', 'get_status', 'registered', 'user']
+    list_display = ['__unicode__', 'goods', 'summary', 'get_status', 'registered', 'user']
     fieldsets = None
     list_filter = ['status', ]
     search_fields = ('user__username',)

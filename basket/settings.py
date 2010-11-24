@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-DEFAULT_BASKET_FORM = 'basket.forms.OrderForm'
-BASKET_FORM = getattr(settings, 'BASKET_FORM', DEFAULT_BASKET_FORM)
 PRICE_ATTR = getattr(settings, 'BASKET_PRICE_ATTR', 'price')
-DEFAULT_BASKET_ORDERINFO = 'basket.models.OrderInfo'
-BASKET_ORDERINFO = getattr(settings, 'BASKET_ORDERINFO', DEFAULT_BASKET_ORDERINFO)
+DEFAULT_BASKET_MODEL = 'basket.models.OrderInfo'
+DEFAULT_BASKET_FORM = 'basket.forms.OrderInfoForm'
+BASKET_MODEL = getattr(settings, 'BASKET_MODEL', DEFAULT_BASKET_MODEL)
+BASKET_FORM = getattr(settings, 'BASKET_FORM', DEFAULT_BASKET_FORM)
