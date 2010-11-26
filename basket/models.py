@@ -245,7 +245,7 @@ class Order(models.Model):
         if self.orderstatus_set.count():
             return self.orderstatus_set.latest('date').type
         else:
-            return Status.objects.get_default()
+            return None
     get_status.short_description = u'Статус заказа'
 
     def __unicode__(self):
