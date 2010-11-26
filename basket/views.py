@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import datetime
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, Http404
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.contenttypes.models import ContentType
 from django.template import loader
 from basket.forms import OrderFormset, OrderStatusForm
-from basket.utils import render_to, get_order_from_request, create_order_from_request, uid_from_request, send_mail
+from basket.utils import render_to, create_order_from_request, uid_from_request, send_mail
 from basket.models import Status, OrderStatus, Order
 from basket.forms import get_order_form
 
@@ -32,13 +32,6 @@ def basket(request):
 
         if formset.is_valid():
             formset.save()
-
-            for form in formset.forms:
-                if not form.cleaned_data.get('keep', True):
-                    # remove items withuot checkboxes
-                    form.instance.quantity = 0
-                order.set_quantity(form.instance.content_object, form.instance.quantity)
-            order.save()
 
             # 3rd place
             if order.empty():
@@ -112,6 +105,7 @@ def status(request):
 
 @render_to('basket/summary.html')
 def add_to_basket(request):
+    print 'Order:', request.order
     if request.order is None:
         order = create_order_from_request(request)
     else:
@@ -121,7 +115,9 @@ def add_to_basket(request):
     object_id = request.REQUEST.get('object_id', None)
     try:
         content_type = ContentType.objects.get(id=content_type_id)
+        print content_type
         item = content_type.get_object_for_this_type(id=object_id)
+        print item
     except ObjectDoesNotExist:
         raise Http404
 

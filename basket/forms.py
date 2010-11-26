@@ -37,6 +37,14 @@ class BasketItemForm(forms.ModelForm):
         widget=forms.HiddenInput)
     object_id = forms.IntegerField(widget=forms.HiddenInput)
     keep = forms.BooleanField(initial=True, required=False)
+    
+    def save(self, *args, **kwargs):
+        if self.cleaned_data.get('keep', False):
+            self.cleaned_data['quantity'] = 0
+        print self.instance.content_object, self.cleaned_data.get('quantity', 0)
+        self.instance.order.set_quantity(self.instance.content_object,
+            self.cleaned_data.get('quantity', 0))
+    
 
 OrderFormset = inlineformset_factory(Order, BasketItem, extra=0,
     can_delete=False, form=BasketItemForm)
