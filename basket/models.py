@@ -98,8 +98,8 @@ class OrderManager(models.Manager):
 
     def get_order(self, uid, create=False):
         '''
-            Get or create order, linked to given user or session.
-            uid - User instance or session key (str)
+        Get or create order, linked to given user or session.
+        uid - User instance or session key (str)
         '''
         order_model = get_order_model()
         try:
@@ -109,7 +109,10 @@ class OrderManager(models.Manager):
                 order = self.create_from_uid(uid)
             else:
                 order = None
-        if order:
+        except Order.MultipleObjectsReturned:
+            self.from_uid(uid).delete()
+            order = self.create_from_uid(uid)
+        if order is not None:
             try:
                 order.orderinfo
             except ObjectDoesNotExist:
