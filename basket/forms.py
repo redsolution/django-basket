@@ -14,8 +14,13 @@ class OrderInfoForm(forms.ModelForm):
     '''
     class Meta:
         model = get_order_model()
-        exclude = ('order', 'trans_company', 'delivery_type', 'delivery_cost',
-                   'delivery_datetime')
+        exclude = ['order']
+
+    def clean(self):
+        cleaned_data = super(OrderInfoForm, self).clean()
+        if not cleaned_data.get('email') and not cleaned_data.get('telephone'):
+            raise forms.ValidationError(u'Необходимо заполнить E-mail или телефон')
+        return cleaned_data
 
 def get_order_form():
     try:

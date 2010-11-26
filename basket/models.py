@@ -11,12 +11,6 @@ from decimal import Decimal
 from basket.settings import PRICE_ATTR, BASKET_MODEL
 from basket.utils import resolve_uid, import_item, BogusSMTPConnection
 
-DELIVER_TYPE = (
-        ('undefined', 'Не установлен'),
-        ('town', 'До города'),
-        ('home', 'До дома'),
-    )
-
 class StatusManager(models.Manager):
     def get_default(self):
         try:
@@ -256,37 +250,22 @@ class OrderInfo(models.Model):
     Order information model. If you want to override default fields, set BASKET_MODEL in settings.py.
     For more information check default settings in basket/settings.py
     '''
-    order = models.OneToOneField(Order)
-    registered = models.DateTimeField(verbose_name=u'Дата и время поступления', auto_now_add=True)
-    fio = models.CharField(verbose_name=u'ФИО', max_length=100, blank=True,
-                           null=True)
-    email = models.CharField(verbose_name=u'e-mail', max_length=100, blank=True,
-                             null=True)
-    telephone = models.CharField(verbose_name=u'Телефон', max_length=100,
-                                 blank=True, null=True)
-    city = models.CharField(verbose_name=u'Город', max_length=100,
-                            blank=True, null=True)
-    address = models.CharField(verbose_name=u'Адрес доставки', max_length=100,
-                              blank=True, null=True)
-    contact_time = models.CharField(verbose_name=u'Удобное время для связи',
-            max_length=100, blank=True, null=True)
-    discount = models.IntegerField(verbose_name=u'Накопленная скидка',
-                                   blank=True, null=True)
-    trans_company = models.CharField(verbose_name=u'Транспортная компания',
-        max_length=10, blank=True, null=True)
-    delivery_type = models.CharField(choices=DELIVER_TYPE, verbose_name=u'Тип доставки',
-        max_length=100, default='undefined')
-    delivery_cost = models.FloatField(verbose_name=u'Cтоимость доставки',
-            blank=True, null=True)
-    delivery_datetime = models.DateTimeField(verbose_name=u'Дата и время доставки',
-            blank=True, null=True)
-    notify = models.BooleanField(verbose_name=u'Оповестить перед доставкой', default=False)
-    comment = models.CharField(verbose_name=u'Комментарий', max_length=200,
-        blank=True, null=True)
-
     class Meta:
         verbose_name = u'Параметры заказа'
         verbose_name_plural = u'Параметры заказа'
+
+    order = models.OneToOneField(Order)
+    registered = models.DateTimeField(verbose_name=u'Дата и время поступления заказа', auto_now_add=True)
+    fio = models.CharField(verbose_name=u'ФИО', max_length=100, blank=True,
+                           null=True)
+    email = models.EmailField(verbose_name=u'e-mail', max_length=100, blank=True,
+                             null=True)
+    telephone = models.CharField(verbose_name=u'Телефон', max_length=100,
+                                 blank=True, null=True)
+    address = models.CharField(verbose_name=u'Адрес', max_length=100,
+                              blank=True, null=True)
+    comment = models.CharField(verbose_name=u'Комментарий', max_length=200,
+        blank=True, null=True)
 
 def get_order_model():
     try:
