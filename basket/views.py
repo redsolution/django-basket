@@ -37,8 +37,10 @@ def basket(request):
             if order.empty():
                 return {}
 
-            if not 'refresh' in request.POST: 
+            if not 'refresh' in request.POST:
                 return HttpResponseRedirect(reverse('order_confirm'))
+            else:
+                formset = OrderFormset(instance=order)
     else:
         formset = OrderFormset(instance=order)
 
@@ -54,7 +56,7 @@ def confirm(request):
 
     if order is None or order.empty():
         return HttpResponseRedirect(reverse('basket'))
-    
+
     if request.method == 'POST':
         form = get_order_form()(request.POST, instance=order.orderinfo)
         if form.is_valid():
@@ -72,7 +74,7 @@ def confirm(request):
     else:
         form = get_order_form()(instance=order.orderinfo)
     return {'form': form, 'order': order}
-    
+
 
 @render_to('basket/thankyou.html')
 def thankyou(request):
@@ -105,7 +107,6 @@ def status(request):
 
 @render_to('basket/summary.html')
 def add_to_basket(request):
-    print 'Order:', request.order
     if request.order is None:
         order = create_order_from_request(request)
     else:
@@ -115,9 +116,7 @@ def add_to_basket(request):
     object_id = request.REQUEST.get('object_id', None)
     try:
         content_type = ContentType.objects.get(id=content_type_id)
-        print content_type
         item = content_type.get_object_for_this_type(id=object_id)
-        print item
     except ObjectDoesNotExist:
         raise Http404
 
