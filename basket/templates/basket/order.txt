@@ -1,6 +1,5 @@
 === Заказ #{{ order.id|stringformat:"06d" }} от {{ order.orderinfo.registered|date:"d/m/y" }} ===
-{% for basketitem in order.items.all %}
-    {{ forloop.counter }}. {{ basketitem.content_object }}: {{ basketitem.get_price }} руб. * {{ basketitem.quantity }} шт. = {{ basketitem.get_sum }} руб.
+{% for basketitem in order.items.all %}{{ forloop.counter }}. {{ basketitem.content_object }}: {{ basketitem.get_price }} руб. * {{ basketitem.quantity }} шт. = {{ basketitem.get_sum }} руб.
 {% endfor %}
 
 Итого {{ order.goods }} товаров на сумму {{ order.summary }} руб.

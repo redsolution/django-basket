@@ -1,3 +1,4 @@
+import os
 import django.core.mail
 from django.conf import settings
 from django.shortcuts import render_to_response
@@ -24,7 +25,10 @@ class BogusSMTPConnection(object):
             print "From: %s" % message.from_email
             print "To: %s" % (", ".join(message.to))
             print "Subject: %s\n\n" % message.subject
-            print "%s" % message.body
+            if os.sys.platform == 'win32':
+                print "%s" % message.body.encode('cp866', 'replace')
+            else:
+                print "%s" % message.body
             print messages
         return len(messages)
 
