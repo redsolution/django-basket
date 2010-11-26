@@ -2,7 +2,7 @@
 <p>Предыдущий заказ:</p>
     {% for item in last.items.all %}
         <p>{{ forloop.counter }}. <a href="{{ item.content_object.get_absolute_url }}" title="Перейти на страницу товара" target="_blank" >
-        {{ item.content_object }}</a></p>
+        {{ item.content_object }}</a>, {{ item.quantity }} шт.</p>
     {% endfor %}
 {% endif %}
 {% if history.count %}
