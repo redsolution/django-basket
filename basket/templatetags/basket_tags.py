@@ -26,7 +26,7 @@ def show_basket_panel(context):
     """
     Show basket panel.
     """
-    return {}
+    return {'order': context['request'].order}
 
 @register.inclusion_tag('basket/button.html')
 def add_basket_button(object):
