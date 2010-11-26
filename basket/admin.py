@@ -47,7 +47,10 @@ try:
 except admin.sites.AlreadyRegistered:
     pass
 
+class StatusAdmin(admin.ModelAdmin):
+    list_display = ['name', 'default', 'closed']
+
 try:
-    admin.site.register(Status)
+    admin.site.register(Status, StatusAdmin)
 except admin.sites.AlreadyRegistered:
     pass

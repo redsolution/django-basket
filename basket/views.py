@@ -68,8 +68,7 @@ def confirm(request):
             orderinfo = form.save(commit=False)
             orderinfo.registered = datetime.datetime.now()
             orderinfo.save()
-            first_status = Status.objects.all()[0]
-            OrderStatus.objects.create(order=order, type=first_status,
+            OrderStatus.objects.create(order=order, type=Status.objects.get_default(),
                 comment=u'Онлайн заказ')
             message = loader.render_to_string('basket/order.txt', {
                 'order': order,

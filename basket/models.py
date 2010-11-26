@@ -17,13 +17,31 @@ DELIVER_TYPE = (
         ('home', 'До дома'),
     )
 
+class StatusManager(models.Manager):
+    def get_default(self):
+        try:
+            return self.get_query_set().get(default=True)
+        except ObjectDoesNotExist:
+            return self.get_query_set().create(name=u'Новый заказ', default=True, closed=False)
+
+
 class Status(models.Model):
     class Meta:
         verbose_name = u'Тип статуса'
         verbose_name_plural = u'Типы статуса'
 
     name = models.CharField(max_length=20, verbose_name=u'Название')
-    closed = models.BooleanField(default=False)
+    default = models.BooleanField(verbose_name=u'Используется по умолчанию', default=False)
+    closed = models.BooleanField(verbose_name=u'Заказ выполнен', default=False)
+    
+    objects = StatusManager()
+    
+    def save(self, *args, **kwargs):
+        super(Status, self).save(*args, **kwargs)
+        if self.default:
+            for status in Status.objects.filter(default=True).exclude(id=self.id):
+                status.default=False
+                status.save()
 
     def __unicode__(self):
         return self.name
@@ -105,8 +123,7 @@ class OrderManager(models.Manager):
                 But order is already created at this moment, and request has no order attribute.
                 So, I decided fetch last order from database with 'new' status   
         '''
-        new_status = Status.objects.all()[0]
-        last_queryset = self.from_uid(uid).filter(status=new_status
+        last_queryset = self.from_uid(uid).filter(status=Status.objects.get_default()
             ).order_by('-orderstatus__date')
         if last_queryset.count():
             return last_queryset[0]
@@ -220,7 +237,7 @@ class Order(models.Model):
         if self.orderstatus_set.count():
             return self.orderstatus_set.latest('date').type
         else:
-            return u'Не оформлен'
+            return Status.objects.get_default()
     get_status.short_description = u'Статус заказа'
 
     def __unicode__(self):
