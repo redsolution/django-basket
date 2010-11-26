@@ -15,32 +15,16 @@ from basket.forms import get_order_form
 def basket(request):
     # do not create order automatically
     order = request.order
-    # there are three places where we check that basket is not empty
-    # otherwise, return page with empty basket message
-    # in order to avoid to show basket with 0 goods
-    # 1st place
-    if order is None or order.empty():
-        return {}
-
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
-
-        # empty basket condition
-        # 2nd place
-        if len(formset.forms) == 0:
-            return {}
 
         if formset.is_valid():
             formset.save()
 
-            # 3rd place
-            if order.empty():
-                return {}
-
-            if not 'refresh' in request.POST:
-                return HttpResponseRedirect(reverse('order_confirm'))
+            if 'refresh' in request.POST:
+                return HttpResponseRedirect(reverse('basket'))
             else:
-                formset = OrderFormset(instance=order)
+                return HttpResponseRedirect(reverse('order_confirm'))
     else:
         formset = OrderFormset(instance=order)
 
