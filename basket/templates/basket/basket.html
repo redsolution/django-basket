@@ -31,7 +31,7 @@ $(document).ready(function() {
 	        {% for form in formset.forms %}
 			<tr>
 	            <td>{{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
-	            <td><a href="{{ form.instance.content_object.get_absolute_url }}" title="Перейти на страницу товара">{{ form.instance.content_object }}</a></td>
+	            <td><a target="_blank" href="{{ form.instance.content_object.get_absolute_url }}" title="Перейти на страницу товара">{{ form.instance.content_object }}</a></td>
 				<td>{{ form.instance.get_price }}</td>
 				<td>{{ form.quantity }}</td>
 				<td>{{ form.instance.get_sum }}</td>
