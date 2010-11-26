@@ -82,15 +82,22 @@ def thankyou(request):
     return {'order': order}
 
 @render_to('basket/status.html')
-def status(request):
+def status(request, order_id=None):
+    if order_id is not None:
+        try:
+            order = Order.objects.get(id=order_id)
+            return {
+                'order': order,
+            }
+        except Order.DoesNotExist:
+            return HttpResponseRedirect(reverse('order_status'))
     if request.method == 'POST':
         form = OrderStatusForm(request.POST)
         if form.is_valid():
             try:
                 order = Order.objects.get(id=form.cleaned_data['order_id'])
                 return {
-                    'status': order.get_status(),
-                    'history': order.orderstatus_set.all(),
+                    'order': order,
                 }
             except Order.DoesNotExist:
                 return {

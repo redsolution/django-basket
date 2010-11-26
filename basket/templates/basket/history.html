@@ -1,5 +1,5 @@
 {% if last %}
-<p>Предыдущий заказ:</p>
+<p><a href="{% url order_status_for_id last.id %}" title="Посмотреть состояние заказа" target="_blank">Предыдущий заказ:</a></p>
     {% for item in last.items.all %}
         <p>{{ forloop.counter }}. <a href="{{ item.content_object.get_absolute_url }}" title="Перейти на страницу товара" target="_blank" >
         {{ item.content_object }}</a>, {{ item.quantity }} шт.</p>
