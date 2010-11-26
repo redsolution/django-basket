@@ -33,14 +33,14 @@ class Status(models.Model):
     name = models.CharField(max_length=20, verbose_name=u'Название')
     default = models.BooleanField(verbose_name=u'Используется по умолчанию', default=False)
     closed = models.BooleanField(verbose_name=u'Заказ выполнен', default=False)
-    
+
     objects = StatusManager()
-    
+
     def save(self, *args, **kwargs):
         super(Status, self).save(*args, **kwargs)
         if self.default:
             for status in Status.objects.filter(default=True).exclude(id=self.id):
-                status.default=False
+                status.default = False
                 status.save()
 
     def __unicode__(self):
@@ -140,6 +140,11 @@ class OrderManager(models.Manager):
         '''
         return self.from_uid(uid).filter(status__closed=True)
 
+    def history(self, uid):
+        '''
+        Returns orders history of given user or session 
+        '''
+        return self.from_uid(uid).exclude(status__isnull=True)
 
 class Order(models.Model):
     class Meta:
