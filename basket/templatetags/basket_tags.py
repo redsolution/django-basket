@@ -35,3 +35,11 @@ def add_basket_button(object):
     """
     content_type = ContentType.objects.get_for_model(object)
     return {'content_type': content_type, 'object': object, }
+
+@register.simple_tag
+def content_type_id(object):
+    """
+    Render content type id.
+    """
+    content_type = ContentType.objects.get_for_model(object)
+    return '%d' % content_type.id
