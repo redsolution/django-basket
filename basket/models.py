@@ -288,7 +288,10 @@ class BasketItem(models.Model):
     quantity = models.IntegerField(u'Количество')
 
     def get_price(self):
-        value = getattr(self.content_object, PRICE_ATTR)
+        if callable(PRICE_ATTR):
+            value = PRICE_ATTR(self.content_object)
+        else:
+            value = getattr(self.content_object, PRICE_ATTR)
         if callable(value):
             value = value()
         return value
