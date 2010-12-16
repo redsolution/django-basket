@@ -37,6 +37,8 @@ def add_basket_button(object):
     """
     Add button to add specified object to the basket.
     """
+    if object is None:
+        return {'content_type': None, 'object': None, }
     content_type = ContentType.objects.get_for_model(object)
     return {'content_type': content_type, 'object': object, }
 
@@ -45,5 +47,7 @@ def content_type_id(object):
     """
     Render content type id.
     """
+    if object is None:
+        return ''
     content_type = ContentType.objects.get_for_model(object)
     return '%d' % content_type.id
