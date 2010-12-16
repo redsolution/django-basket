@@ -23,7 +23,7 @@ class OrderInfoInline(admin.StackedInline):
 
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderInfoInline, StatusInline, ]
-    exclude = ['user', 'session', 'form_data']
+    exclude = ['user', 'session', ]
     list_display = ['__unicode__', 'goods', 'summary', 'get_status', 'registered', 'user']
     fieldsets = None
     list_filter = ['status', ]
