@@ -99,7 +99,12 @@ def status(request, order_id=None):
 @render_to('basket/summary.html')
 def add_to_basket(request):
     if request.order is None:
-        order = create_order_from_request(request)
+        if request.user.is_authenticated():
+            order = Order.objects.create(user=request.user)
+        else:
+            order = Order.objects.create(session_key=request.session_key)
+        order.save()
+        request.session['order_id'] = order.id
     else:
         order = request.order
 

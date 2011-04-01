@@ -9,50 +9,30 @@ from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from datetime import datetime
 from decimal import Decimal
 from basket.settings import PRICE_ATTR, BASKET_MODEL
-from basket.utils import resolve_uid, import_item, BogusSMTPConnection
+from basket.utils import resolve_uid, import_item
 
-class StatusManager(models.Manager):
-    def get_default(self):
-        try:
-            return self.get_query_set().get(default=True)
-        except ObjectDoesNotExist:
-            return self.get_query_set().create(name=u'Новый заказ', default=True, closed=False)
-
+STATUS_CHIOCES = (
+    (0, _('Pending')),
+    (1, _('New')),
+    (2, _('Process')),
+    (3, _('Closed & OK')),
+    (2, _('Closed with error')),
+)
 
 class Status(models.Model):
     class Meta:
-        verbose_name = u'Тип статуса'
-        verbose_name_plural = u'Типы статуса'
-
-    name = models.CharField(max_length=20, verbose_name=u'Название')
-    default = models.BooleanField(verbose_name=u'Используется по умолчанию', default=False)
-    closed = models.BooleanField(verbose_name=u'Заказ выполнен', default=False)
-
-    objects = StatusManager()
-
-    def save(self, *args, **kwargs):
-        super(Status, self).save(*args, **kwargs)
-        if self.default:
-            for status in Status.objects.filter(default=True).exclude(id=self.id):
-                status.default = False
-                status.save()
-
-    def __unicode__(self):
-        return self.name
-
-
-class OrderStatus(models.Model):
-    class Meta:
-        verbose_name = u'Статус заказа'
-        verbose_name_plural = u'Статусы заказа'
+        verbose_name = _('Order status')
+        verbose_name_plural = _('Order statuses')
         ordering = ['date']
 
-    type = models.ForeignKey('Status', verbose_name=u'Тип статуса')
+    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
     order = models.ForeignKey('Order')
-    date = models.DateTimeField(default=lambda: datetime.now(), verbose_name=u'Дата')
-    comment = models.CharField(max_length=100, verbose_name=u'Комментарий',
+    
+    last_modified = models.DateTimeField(default=lambda: datetime.now(),
+        verbose_name=_('Last modified date'))
+    comment = models.CharField(max_length=100, verbose_name=_('Comment'),
         blank=True, null=True)
-    user = models.ForeignKey('auth.User', verbose_name=u'Пользователь', null=True, blank=True)
+    user = models.ForeignKey('auth.User', verbose_name=_('Modified by'), null=True, blank=True)
 
     def __unicode__(self):
         return self.type.name
@@ -145,9 +125,8 @@ class Order(models.Model):
         verbose_name = u'Заказ'
         verbose_name_plural = u'Заказы'
 
-    user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-    status = models.ManyToManyField('Status', through='OrderStatus')
 
     objects = OrderManager()
 
@@ -245,28 +224,6 @@ class Order(models.Model):
     def __unicode__(self):
         return 'order #%s' % self.id
 
-class OrderInfo(models.Model):
-    '''
-    Order information model. If you want to override default fields, set BASKET_MODEL in settings.py.
-    For more information check default settings in basket/settings.py
-    '''
-    class Meta:
-        verbose_name = u'Параметры заказа'
-        verbose_name_plural = u'Параметры заказа'
-
-    order = models.OneToOneField(Order)
-    registered = models.DateTimeField(verbose_name=u'Дата и время поступления заказа', auto_now_add=True)
-    fio = models.CharField(verbose_name=u'ФИО', max_length=100, blank=True,
-                           null=True)
-    email = models.EmailField(verbose_name=u'e-mail', max_length=100, blank=True,
-                             null=True)
-    telephone = models.CharField(verbose_name=u'Телефон', max_length=100,
-                                 blank=True, null=True)
-    address = models.CharField(verbose_name=u'Адрес', max_length=100,
-                              blank=True, null=True)
-    comment = models.CharField(verbose_name=u'Комментарий', max_length=200,
-        blank=True, null=True)
-
 def get_order_model():
     try:
         order_model = import_item(BASKET_MODEL, 'Can not import BASKET_MODEL')
@@ -298,7 +255,3 @@ class BasketItem(models.Model):
 
     def get_sum(self):
         return self.get_price() * self.quantity
-
-if settings.DEBUG:
-    from django.core import mail
-    mail.SMTPConnection = BogusSMTPConnection
