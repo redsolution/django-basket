@@ -42,12 +42,12 @@ class Status(models.Model):
     class Meta:
         verbose_name = _('Order status')
         verbose_name_plural = _('Order statuses')
-        ordering = ['date']
+        ordering = ['modified']
 
     status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
     order = models.ForeignKey('Order')
 
-    last_modified = models.DateTimeField(default=lambda: datetime.now(),
+    modified = models.DateTimeField(default=lambda: datetime.now(),
         verbose_name=_('Last modified date'))
     comment = models.CharField(max_length=100, verbose_name=_('Comment'),
         blank=True, null=True)
@@ -71,7 +71,6 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-    status = models.ForeignKey(Status, verbose_name=_('Order status'))
 
     objects = query_set_factory('Order', OrderQuerySet)
 
@@ -93,8 +92,9 @@ class Order(models.Model):
             order.user = request.user
         else:
             order.session = request.session
-        order.status = STATUS_NEW
         order.save()
+        Status.objects.create(status=STATUS_NEW, order=order,
+            comment=_('Automatically created status'))
         request.session['order_id'] = order.id
         return order
 
@@ -161,6 +161,10 @@ class Order(models.Model):
     def summary(self):
         return self.calculate()['summary']
     summary.short_description = _('Total price')
+
+    def get_status(self):
+        return self.status_set.latest('modified')
+    get_status.short_description = _('Order status')
 
     def empty(self):
         return self.goods() == 0

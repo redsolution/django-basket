@@ -1,56 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from basket.models import Order, Status, OrderStatus, get_order_model
-from django import forms
-
-class StatusInlineForm(forms.ModelForm):
-    class Meta:
-        model = OrderStatus
-        fields = ('type', 'order', 'date', 'comment', 'user')
-    user = forms.CharField(label=u'Пользователь',
-        widget=forms.HiddenInput(attrs={'disabled': True}), required=False)
+from basket.models import Order, Status
 
 class StatusInline(admin.TabularInline):
-    model = OrderStatus
-    extra = 1
-    form = StatusInlineForm
-    fields = ('type', 'order', 'date', 'comment', 'user')
-    template = 'admin/basket/order/tabular.html'
-
-class OrderInfoInline(admin.StackedInline):
-    model = get_order_model()
-    extra = 1
+    model = Status
 
 class OrderAdmin(admin.ModelAdmin):
-    inlines = [OrderInfoInline, StatusInline, ]
+    inlines = [StatusInline]
     exclude = ['user', 'session', ]
     list_display = ['__unicode__', 'goods', 'summary', 'get_status', 'registered', 'user']
     fieldsets = None
-    list_filter = ['status', ]
     search_fields = ('user__username',)
-
-    def save_formset(self, request, form, formset, change):
-
-        # override: last edited user saved in user field
-        for index, inline_form in enumerate(formset.forms):
-
-            if 'user' in inline_form.changed_data:
-                inline_form.changed_data.remove('user')
-
-            if inline_form.changed_data:
-                formset.cleaned_data[index].update({'user': request.user})
-
-        return super(OrderAdmin, self).save_formset(request, form, formset, change)
 
 try:
     admin.site.register(Order, OrderAdmin)
-except admin.sites.AlreadyRegistered:
-    pass
-
-class StatusAdmin(admin.ModelAdmin):
-    list_display = ['name', 'default', 'closed']
-
-try:
-    admin.site.register(Status, StatusAdmin)
 except admin.sites.AlreadyRegistered:
     pass
