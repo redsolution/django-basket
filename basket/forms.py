@@ -4,6 +4,8 @@ from django.forms.models import inlineformset_factory
 from django.contrib.contenttypes.models import ContentType
 from basket.models import Order, BasketItem
 from basket.settings import BASKET_OPTIONS_USE_KEEP
+from django.utils.translation import ugettext_lazy as _
+
 
 class BasketItemForm(forms.ModelForm):
     class Meta:
@@ -27,12 +29,12 @@ OrderFormset = inlineformset_factory(Order, BasketItem, extra=0,
 
 
 class DefaultOrderForm(forms.Form):
-    name = forms.CharField(verbose_name=_('Customer name'), max_length=100)
-    phone = forms.CharField(verbose_name=_('Customer phone'), max_length=100)
-    address = forms.CharField(verbose_name=_('Delivery address'), max_length=255)
-    contact_time = forms.CharField(verbose_name=_('Convenient time to call'),
+    name = forms.CharField(label=_('Customer name'), max_length=100)
+    phone = forms.CharField(label=_('Customer phone'), max_length=100)
+    address = forms.CharField(label=_('Delivery address'), max_length=255)
+    contact_time = forms.CharField(label=_('Convenient time to call'),
         max_length=50, required=False)
-    comment = forms.CharField(verbose_name=_('Comment for us'), max_length=255,
+    comment = forms.CharField(label=_('Comment for us'), max_length=255,
         widget=forms.Textarea(), required=False)
 
     def save(self, *args, **kwds):

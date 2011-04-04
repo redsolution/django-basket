@@ -10,7 +10,7 @@ class BasketMiddleware(object):
                 request.order = request.user.order_set.new_orders().get()
                 request.session['order_id'] = request.order.id
             elif request.user.order_set.new_orders().count() == 0:
-                pass
+                request.order = None
             else:
                 # exception situation, two orders created!
                 request.order = request.user.order_set.new_orders()[0]
@@ -23,4 +23,6 @@ class BasketMiddleware(object):
                 except ObjectDoesNotExist:
                     # Order completed
                     del request.session['order_id']
-            
+                    request.order = None
+            else:
+                request.order = None
