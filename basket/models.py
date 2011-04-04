@@ -84,7 +84,19 @@ class Order(models.Model):
             return True
     registered.short_description = _('Registered user')
     registered.boolean = True
-
+    
+    @classmethod
+    def from_request(cls, request):
+        order = cls()
+        if request.user.is_authenticated():
+            order.user = request.user
+        else:
+            order.session = request.session
+        order.status = STATUS_NEW
+        order.save()
+        request.session['order_id'] = order.id
+        return order
+    
     def add_item(self, item):
         item_ct = ContentType.objects.get_for_model(item)
         already_in_order = bool(

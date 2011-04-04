@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-import datetime
-from django.http import HttpResponseRedirect, Http404
+from basket.forms import OrderFormset
+from basket.models import Order
+from basket.utils import render_to, get_order_form, send_mail
 from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseBadRequest, HttpResponseRedirect, Http404
 from django.template import loader
-from basket.forms import OrderFormset, OrderStatusForm
-from basket.utils import render_to, create_order_from_request, uid_from_request, send_mail
-from basket.models import Status, OrderStatus, Order
-from basket.forms import get_order_form
 
 @render_to('basket/basket.html')
 def basket(request):
     # do not create order automatically
     order = request.order
+    if order is None:
+        raise HttpResponseRedirect(reverse('basket-empty'))
+
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
 
@@ -29,6 +30,7 @@ def basket(request):
         formset = OrderFormset(instance=order)
 
     return {
+        'order_form': get_order_form(),
         'formset': formset,
         'order': order,
     }
@@ -39,16 +41,12 @@ def confirm(request):
     order = request.order
 
     if order is None or order.empty():
-        return HttpResponseRedirect(reverse('basket'))
+        return HttpResponseRedirect(reverse('basket-empty'))
 
     if request.method == 'POST':
-        form = get_order_form()(request.POST, instance=order.orderinfo)
+        form = get_order_form()(request.POST)
         if form.is_valid():
-            orderinfo = form.save(commit=False)
-            orderinfo.registered = datetime.datetime.now()
-            orderinfo.save()
-            OrderStatus.objects.create(order=order, type=Status.objects.get_default(),
-                comment=u'Онлайн заказ')
+            form.save()
             message = loader.render_to_string('basket/order.txt', {
                 'order': order,
             })
@@ -60,61 +58,54 @@ def confirm(request):
     return {'form': form, 'order': order}
 
 
-@render_to('basket/thankyou.html')
 def thankyou(request):
-    order = Order.objects.get_last(uid_from_request(request))
-    return {'order': order}
+    '''Use generic view instead'''
+    raise NotImplementedError
 
-@render_to('basket/status.html')
 def status(request, order_id=None):
-    if order_id is not None:
-        try:
-            order = Order.objects.get(id=order_id)
-            return {
-                'order': order,
-            }
-        except Order.DoesNotExist:
-            return HttpResponseRedirect(reverse('order_status'))
-    if request.method == 'POST':
-        form = OrderStatusForm(request.POST)
-        if form.is_valid():
-            try:
-                order = Order.objects.get(id=form.cleaned_data['order_id'])
-                return {
-                    'order': order,
-                }
-            except Order.DoesNotExist:
-                return {
-                    'form': form,
-                    'order_id': form.cleaned_data['order_id']
-                }
-        else:
-            return {'form': form}
-    else:
-        return {'form': OrderStatusForm()}
-
-
-# ajax views
+    '''Use generic view instead'''
+    raise NotImplementedError
 
 @render_to('basket/summary.html')
 def add_to_basket(request):
-    if request.order is None:
-        if request.user.is_authenticated():
-            order = Order.objects.create(user=request.user)
+    if request.method == 'POST':
+        # Automatically create order if it does not exist
+        if request.order is None:
+            order = Order.from_request(request)
         else:
-            order = Order.objects.create(session_key=request.session_key)
-        order.save()
-        request.session['order_id'] = order.id
+            order = request.order
+
+        content_type_id = request.REQUEST.get('content_type', None)
+        object_id = request.REQUEST.get('object_id', None)
+        try:
+            content_type = ContentType.objects.get(id=content_type_id)
+            item = content_type.get_object_for_this_type(id=object_id)
+        except ObjectDoesNotExist:
+            raise Http404
+
+        order.add_item(item)
+        return {'order': order}
     else:
+        return HttpResponseBadRequest(_('Only POST method allowed'))
+
+
+@render_to('basket/summary.html')
+def delete_from_basket(request):
+    if request.method == 'POST':
+        # Do not automatically create order
         order = request.order
+        if order is None:
+            raise Http404(_('Basket does not exist'))
 
-    content_type_id = request.REQUEST.get('content_type', None)
-    object_id = request.REQUEST.get('object_id', None)
-    try:
-        content_type = ContentType.objects.get(id=content_type_id)
-        item = content_type.get_object_for_this_type(id=object_id)
-    except ObjectDoesNotExist:
-        raise Http404
+        content_type_id = request.REQUEST.get('content_type', None)
+        object_id = request.REQUEST.get('object_id', None)
+        try:
+            content_type = ContentType.objects.get(id=content_type_id)
+            item = content_type.get_object_for_this_type(id=object_id)
+        except ObjectDoesNotExist:
+            raise Http404
 
-    order.add_item(item)
-    return {'order': order}
+        order.remove_item(item)
+        return {'order': order}
+    else:
+        return HttpResponseBadRequest(_('Only POST method allowed'))

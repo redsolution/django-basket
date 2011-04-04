@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 class BasketMiddleware(object):
-    '''Add order attribute to request'''
+    '''Add order attribute to request only if appropriate Order instance exists'''
     def process_request(self, request):
         if request.user.is_authenticated():
             if request.user.order_set.new_orders().count() == 1:

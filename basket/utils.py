@@ -3,9 +3,7 @@ import django.core.mail
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
-
+from basket.settings import BASKET_FORM
 
 def send_mail(subject, message, recipent_list):
     from_email = settings.DEFAULT_FROM_EMAIL
@@ -38,3 +36,6 @@ def import_item(path, error_text):
     except ImportError, e:
         from django.core.exceptions import ImproperlyConfigured
         raise ImproperlyConfigured('Error importing %s %s: "%s"' % (error_text, path, e))
+
+def get_order_form():
+    return import_item(BASKET_FORM)
