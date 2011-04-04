@@ -197,9 +197,10 @@ class BasketItem(models.Model):
     def get_sum(self):
         return self.get_price() * self.quantity
 
-def send_email(sender, order, post):
+def send_email(sender, **kwargs):
     '''Send email when order issued'''
+    order = kwargs['order']
     print 'Alarm! New order!'
     print order
 
-order_submit.connect(send_email)
+order_submit.connect(send_email, sender=Order)
