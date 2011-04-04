@@ -15,7 +15,7 @@ def basket(request):
     # do not create order automatically
     order = request.order
     if order is None:
-        raise HttpResponseRedirect(reverse('basket-empty'))
+        return HttpResponseRedirect(reverse('basket-empty'))
 
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
