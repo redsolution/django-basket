@@ -17,13 +17,12 @@ class OrderInfo(models.Model):
     order = models.OneToOneField(Order)
     registered = models.DateTimeField(verbose_name=_('Order creation date and time'),
         auto_now_add=True)
-    fio = models.CharField(verbose_name=_('Customer name'), max_length=100,
-        blank=True, null=True)
+    name = models.CharField(verbose_name=_('Customer name'), max_length=100)
+    address = models.CharField(verbose_name=_('Address'), max_length=100)
+    city = models.CharField(verbose_name=_('City'), max_length=50)
+    telephone = models.CharField(verbose_name=_('Phone number'), max_length=100)
+
     email = models.EmailField(verbose_name=_('Email'), max_length=100,
-        blank=True,null=True)
-    telephone = models.CharField(verbose_name=_('Phone number'), max_length=100,
-        blank=True, null=True)
-    address = models.CharField(verbose_name=_('Address'), max_length=100,
         blank=True, null=True)
     comment = models.CharField(verbose_name=_('Comment'), max_length=200,
         blank=True, null=True)
