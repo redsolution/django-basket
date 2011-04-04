@@ -13,3 +13,10 @@ def add_basket_button(object):
     content_type = ContentType.objects.get_for_model(object)
     return {'content_type': content_type, 'object': object, }
 
+@register.filter
+def content_type(object):
+    '''
+    returns content type id for object
+    '''
+    content_type = ContentType.objects.get_for_model(object)
+    return '%s' % content_type.id
