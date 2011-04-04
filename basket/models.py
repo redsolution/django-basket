@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
-from django.utils.translation import ugettext_lazy as _
+from basket.settings import PRICE_ATTR
+from basket.signals import order_submit
 from datetime import datetime
 from decimal import Decimal
-from basket.settings import PRICE_ATTR
+from django.contrib.auth.models import User
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 STATUS_PENDING = 0
 STATUS_NEW = 1
@@ -45,7 +46,7 @@ class Status(models.Model):
 
     status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
     order = models.ForeignKey('Order')
-    
+
     last_modified = models.DateTimeField(default=lambda: datetime.now(),
         verbose_name=_('Last modified date'))
     comment = models.CharField(max_length=100, verbose_name=_('Comment'),
@@ -71,7 +72,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
     status = models.ForeignKey(Status, verbose_name=_('Order status'))
-    
+
     objects = query_set_factory('Order', OrderQuerySet)
 
     def registered(self):
@@ -84,7 +85,7 @@ class Order(models.Model):
             return True
     registered.short_description = _('Registered user')
     registered.boolean = True
-    
+
     @classmethod
     def from_request(cls, request):
         order = cls()
@@ -96,7 +97,7 @@ class Order(models.Model):
         order.save()
         request.session['order_id'] = order.id
         return order
-    
+
     def add_item(self, item):
         item_ct = ContentType.objects.get_for_model(item)
         already_in_order = bool(
@@ -191,3 +192,10 @@ class BasketItem(models.Model):
 
     def get_sum(self):
         return self.get_price() * self.quantity
+
+def send_email(sender, order, post):
+    '''Send email when order issued'''
+    print 'Alarm! New order!'
+    print order
+
+order_submit.connect(send_email)

@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, HttpResponseRedirect, Http404
 from django.template import loader
+from basket.signals import order_submit
 
 @render_to('basket/basket.html')
 def basket(request):
@@ -47,11 +48,7 @@ def confirm(request):
         form = get_order_form()(request.POST)
         if form.is_valid():
             form.save()
-            message = loader.render_to_string('basket/order.txt', {
-                'order': order,
-            })
-            send_mail(u'Форма заказа', message,
-                [manager[1] for manager in settings.MANAGERS])
+            order_submit.send(order=order, post=request.POST)
             return HttpResponseRedirect(reverse('order_thankyou'))
     else:
         form = get_order_form()(instance=order.orderinfo)
