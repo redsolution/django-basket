@@ -1,23 +1,41 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
+from django.utils.translation import ugettext_lazy as _
 from datetime import datetime
 from decimal import Decimal
-from basket.settings import PRICE_ATTR, BASKET_MODEL
-from basket.utils import resolve_uid, import_item
+from basket.settings import PRICE_ATTR
+
+STATUS_PENDING = 0
+STATUS_NEW = 1
+STATUS_PROCESS = 2
+STATUS_CLOSED = 3
+STATUS_ERROR = 4
 
 STATUS_CHIOCES = (
-    (0, _('Pending')),
-    (1, _('New')),
-    (2, _('Process')),
-    (3, _('Closed & OK')),
-    (2, _('Closed with error')),
+    (STATUS_PENDING, _('Pending')),
+    (STATUS_NEW, _('New')),
+    (STATUS_PROCESS, _('Process')),
+    (STATUS_CLOSED, _('Closed & OK')),
+    (STATUS_ERROR, _('Closed with error')),
 )
+
+def query_set_factory(model_name, query_set_class):
+    class ChainedManager(models.Manager):
+
+        def get_query_set(self):
+            model = models.get_model('basket', model_name)
+            return query_set_class(model)
+
+        def __getattr__(self, attr, *args):
+            try:
+                return getattr(self.__class__, attr, *args)
+            except AttributeError:
+                return getattr(self.get_query_set(), attr, *args)
+    return ChainedManager()
 
 class Status(models.Model):
     class Meta:
@@ -38,97 +56,23 @@ class Status(models.Model):
         return self.type.name
 
 
-class OrderManager(models.Manager):
-    '''
-    Custom manager for basket
-    methods:
-        TODO: methods
-    '''
+class OrderQuerySet(models.query.QuerySet):
 
-    def from_uid(self, uid):
-        '''
-        Utility method, returns QuerySet of order objects 
-        referenced to given uid: User id or session key
-        
-        Returns empty queryset if nothing found
-        '''
-        kwargs = resolve_uid(uid)
-        if len(kwargs):
-            return self.get_query_set().filter(**kwargs)
-        else:
-            return self.get_empty_query_set()
+    def new_orders(self):
+        '''Filters active orders, which can be changed by user'''
+        return self.filter(status=STATUS_NEW)
 
-    def create_from_uid(self, uid):
-        '''
-        Returns new order referenced to given uid: user id or session key
-        
-        Returns None if uid is not valid.
-        '''
-        kwargs = resolve_uid(uid)
-        if len(kwargs):
-            return self.get_query_set().create(**kwargs)
-        else:
-            return None
-
-    def get_order(self, uid, create=False):
-        '''
-        Get or create order, linked to given user or session.
-        uid - User instance or session key (str)
-        '''
-        order_model = get_order_model()
-        try:
-            order = self.from_uid(uid).get(status__isnull=True)
-        except Order.DoesNotExist:
-            if create:
-                order = self.create_from_uid(uid)
-            else:
-                order = None
-        except Order.MultipleObjectsReturned:
-            self.from_uid(uid).delete()
-            order = self.create_from_uid(uid)
-        if order is not None:
-            try:
-                order.orderinfo
-            except ObjectDoesNotExist:
-                order_model.objects.create(order=order)
-        return order
-
-    def get_last(self, uid):
-        '''
-        Return last order for given UID, supposed to be used after order confirmation:
-        Notice: We should create order and redirect user, so he couldn't resend POST again.
-                But order is already created at this moment, and request has no order attribute.
-                So, I decided fetch last order from database with 'new' status   
-        '''
-        last_queryset = self.from_uid(uid).filter(status=Status.objects.get_default()
-            ).order_by('-orderstatus__date')
-        if last_queryset.count():
-            return last_queryset[0]
-        else:
-            return None
-
-
-    def closed(self, uid):
-        '''
-        Returns closed orders of given user or session 
-        '''
-        return self.from_uid(uid).filter(status__closed=True)
-
-    def history(self, uid):
-        '''
-        Returns orders history of given user or session 
-        '''
-        return self.from_uid(uid).exclude(status__isnull=True)
 
 class Order(models.Model):
     class Meta:
-        verbose_name = u'Заказ'
-        verbose_name_plural = u'Заказы'
+        verbose_name = _('Order')
+        verbose_name_plural = _('Orders')
 
     user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-
-    objects = OrderManager()
+    status = models.ForeignKey(Status, verbose_name=_('Order status'))
+    
+    objects = query_set_factory('Order', OrderQuerySet)
 
     def registered(self):
         '''
@@ -138,7 +82,7 @@ class Order(models.Model):
             return False
         else:
             return True
-    registered.short_description = u'Зарегистрирован'
+    registered.short_description = _('Registered user')
     registered.boolean = True
 
     def add_item(self, item):
@@ -199,38 +143,18 @@ class Order(models.Model):
 
     def goods(self):
         return self.calculate()['goods']
-    goods.short_description = u'Кол-во товаров'
+    goods.short_description = _('Total items in basket')
 
     def summary(self):
         return self.calculate()['summary']
-    summary.short_description = u'Сумма'
+    summary.short_description = _('Total price')
 
     def empty(self):
         return self.goods() == 0
 
-    def get_uid(self):
-        if self.registered():
-            return self.user
-        else:
-            return self.session
-
-    def get_status(self):
-        if self.orderstatus_set.count():
-            return self.orderstatus_set.latest('date').type
-        else:
-            return None
-    get_status.short_description = u'Статус заказа'
-
     def __unicode__(self):
         return 'order #%s' % self.id
 
-def get_order_model():
-    try:
-        order_model = import_item(BASKET_MODEL, 'Can not import BASKET_MODEL')
-    except ImproperlyConfigured:
-        return OrderInfo
-    else:
-        return order_model
 
 class BasketItem(models.Model):
     class Meta:
@@ -242,7 +166,7 @@ class BasketItem(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
-    quantity = models.IntegerField(u'Количество')
+    quantity = models.IntegerField(verbose_name=_('Quantity'))
 
     def get_price(self):
         if callable(PRICE_ATTR):
