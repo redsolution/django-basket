@@ -83,7 +83,7 @@ def add_to_basket(request):
         raise Http404
 
     order.add_item(item)
-    return {'order': order}
+    return {}
 
 
 @require_http_methods(["POST"])
