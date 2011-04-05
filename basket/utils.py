@@ -27,7 +27,7 @@ def render_to(template_path):
         return wrapper
     return decorator
 
-def import_item(path, error_text):
+def import_item(path, error_text=''):
     """Imports a model by given string. In error case raises ImpoprelyConfigured"""
     i = path.rfind('.')
     module, attr = path[:i], path[i + 1:]
