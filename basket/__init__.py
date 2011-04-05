@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-VERSION = (0, 3, 0)
+__version__ = '0.4.0'

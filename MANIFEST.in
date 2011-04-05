@@ -1,0 +1,2 @@
+recursive-include basket/media *.*  
+recursive-include basket/templates *.html
