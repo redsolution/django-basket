@@ -40,6 +40,7 @@ $(document).ready(function() {
 	    </table>
         <p>
 		    {{ formset.management_form }}
+		    {% csrf_token %}
             <input type="submit" value="Оформить заказ" />
             <input type="submit" id="basket-refresh" value="Пересчитать" />
         </p>
@@ -52,6 +53,7 @@ $(document).ready(function() {
 
 <form action="{% url order_confirm %}" method="POST">
     {{ order_form.as_p }}
+    {% csrf_token %}
 </form>
 
 {% endblock content %}
