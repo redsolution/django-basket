@@ -1,14 +1,30 @@
+{% load i18n %}
 <script type="text/javascript">
 <!--
-function add_to_basket(obj, content_type, object_id) {
-	$(".basket-added", $(obj).parents(".add-to-basket")).show();
-	$('#basket-is-loading').show();
-	$.post('{% url add_to_basket %}', {'content_type': content_type, 'object_id': object_id}, function (data) {
-		$('#basket-is-loading').hide();
-		$('#basket-summary').html(data);
+$(document).ready(function(){
+	basket.panel = $('#basket-panel');
+	
+	$(document).bind("before_add.basket", function(e){
+		// show loading animation
+		basket.panel.find('#basket-is-loading').show();
+		basket.panel.find('#basket-summary').hide();
+		// replace add button with text
+		var added = $(".basket-added", $(e.el).parents(".add-to-basket"));
+		$(e.el).replaceWith(added);
+		added.show();
 	});
-	return false;
-}
+    
+	$(document).bind("add_success.basket", function(e, data){
+		$('#basket-summary').html(data);
+        basket.panel.find('#basket-is-loading').hide();
+        basket.panel.find('#basket-summary').show();
+    });
+	
+   $(document).bind("add_error.basket", function(e, error){
+        alert('{% trans "Error occured when addin to basket:\n" %}' + error);
+        window.location.reload();
+    });
+});
 //-->
 </script>
 <div id="basket-panel">

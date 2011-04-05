@@ -1,6 +1,6 @@
 <div class="add-to-basket">
 	<div class="basket-button">
-		<a href="#" onclick="add_to_basket(this, {{ content_type.id }}, {{ object.id }}); return false;">
+		<a href="#" onclick="return basket.add(this, {{ content_type.id }}, {{ object.id }});">
 			Добавить в корзину
 		</a>
 	</div>

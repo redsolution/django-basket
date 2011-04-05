@@ -1,6 +1,17 @@
+# -*- coding: utf-8 -*-
 from basket.models import Order
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse
+import re
 
+_BASKET_JS_RE = \
+    re.compile(r'(<script\W[^>]*\bsrc\s*=\s*(\'|"|)[^\'^\"]*basket.js(\'|"|)\b[^>]*>\W*</\s*script\s*>)', re.IGNORECASE)
+BASKET_URL_SCRIPT = '''
+<script type="text/javascript">
+    basket.add_url = '%s';
+</script>
+'''
 
 class BasketMiddleware(object):
     '''Add order attribute to request only if appropriate Order instance exists'''
@@ -26,3 +37,14 @@ class BasketMiddleware(object):
                     request.order = None
             else:
                 request.order = None
+
+    def process_response(self, request, response):
+        '''Add basket url to script'''
+        try:
+            def add_url_definition(match):
+                return mark_safe(match.group() + BASKET_URL_SCRIPT % reverse('add_to_basket'))
+            response.content = _BASKET_JS_RE.sub(add_url_definition, response.content)
+        except:
+            return response
+        else:
+            return response

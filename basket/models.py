@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext
 
 STATUS_PENDING = 0
 STATUS_NEW = 1
@@ -93,8 +94,9 @@ class Order(models.Model):
         else:
             order.session = request.session
         order.save()
+        comment = ugettext('Automatically created status')
         Status.objects.create(status=STATUS_NEW, order=order,
-            comment=_('Automatically created status'))
+            comment=comment)
         request.session['order_id'] = order.id
         return order
 
