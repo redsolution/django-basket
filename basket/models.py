@@ -62,7 +62,7 @@ class OrderQuerySet(models.query.QuerySet):
 
     def new_orders(self):
         '''Filters active orders, which can be changed by user'''
-        return self.filter(status=STATUS_NEW)
+        return self.filter(status__status=STATUS_NEW)
 
 
 class Order(models.Model):
@@ -71,7 +71,8 @@ class Order(models.Model):
         verbose_name_plural = _('Orders')
 
     user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
-    session = models.ForeignKey(Session, null=True, blank=True)
+    session_key = models.CharField(verbose_name=_('Session key'),
+        max_length=40, null=True, blank=True)
 
     objects = query_set_factory('Order', OrderQuerySet)
 
@@ -92,7 +93,7 @@ class Order(models.Model):
         if request.user.is_authenticated():
             order.user = request.user
         else:
-            order.session = request.session
+            order.session_key = request.session.session_key
         order.save()
         comment = ugettext('Automatically created status')
         Status.objects.create(status=STATUS_NEW, order=order,

@@ -7,7 +7,7 @@ class StatusInline(admin.TabularInline):
 
 class OrderAdmin(admin.ModelAdmin):
     inlines = [StatusInline]
-    exclude = ['user', 'session', ]
+    exclude = ['user', 'session_key', ]
     list_display = ['__unicode__', 'goods', 'summary', 'get_status', 'registered', 'user']
     fieldsets = None
     search_fields = ('user__username',)
