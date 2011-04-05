@@ -1,6 +1,11 @@
-{% if order.goods %}
-    <p>В вашей корзине {{ order.goods }} товаров на сумму <span class="summary">{{ order.summary }} руб.</span><br />
-    <a href="{% url basket %}" title="Оформить заказ">Перейти в корзину</a></p>
+{% load i18n pytils_numeral %}
+{% if order.empty %}
+    <p>{% trans 'Basket is empty' %}</p>
 {% else %}
-    <p>Ваша корзина пуста</p>
+    <p>
+    {% blocktrans with order.goods as items and order.summary as price and order.goods|choose_plural:"item1, items2, items5" as pluarized_items%}
+    {{ items }} {{ pluarized_items }} in basket. Total cost {{ price }}
+    {% endblocktrans %}
+    </p>
+    <a href="{% url basket %}" title="{% trans 'Submit order' %}">{% trans 'Go to basket page' %}</a></p>
 {% endif %}

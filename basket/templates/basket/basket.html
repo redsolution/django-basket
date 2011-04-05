@@ -3,11 +3,6 @@
 {% block title %}Корзина{% endblock title %}
 {% block content_title %}Корзина{% endblock content_title %}
 
-{% block head %}
-<script type="text/javascript" src="/media/basket/js/jquery-1.4.2.min.js"></script>
-{{ block.super }}
-{% endblock %}
-
 {% block content %}
 <script type="text/javascript">
 <!--
@@ -52,5 +47,11 @@ $(document).ready(function() {
 {% else %}
 	<p>Ваша корзина пуста</p>
 {% endif %}
-{% load basket_tags %}{% show_basket_history %}
+
+{# if you want, you can show order info form here #}
+
+<form action="{% url order_confirm %}" method="POST">
+    {{ order_form.as_p }}
+</form>
+
 {% endblock content %}
