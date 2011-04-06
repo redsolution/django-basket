@@ -1,17 +1,59 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
-from django.utils import simplejson
-from django.contrib.admin.models import LogEntry
+from basket.settings import PRICE_ATTR
+from basket.signals import order_submit
 from datetime import datetime
 from decimal import Decimal
-from basket.settings import PRICE_ATTR
-from basket.utils import resolve_uid
+from django.contrib.auth.models import User
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
+from django.db.models import Count
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext
 
+STATUS_PENDING = 0
+STATUS_NEW = 1
+STATUS_PROCESS = 2
+STATUS_CLOSED = 3
+STATUS_ERROR = 4
+
+STATUS_CHIOCES = (
+    (STATUS_PENDING, _('Pending')),
+    (STATUS_NEW, _('New')),
+    (STATUS_PROCESS, _('Process')),
+    (STATUS_CLOSED, _('Closed & OK')),
+    (STATUS_ERROR, _('Closed with error')),
+)
+
+def query_set_factory(model_name, query_set_class):
+    class ChainedManager(models.Manager):
+
+        def get_query_set(self):
+            model = models.get_model('basket', model_name)
+            return query_set_class(model)
+
+        def __getattr__(self, attr, *args):
+            try:
+                return getattr(self.__class__, attr, *args)
+            except AttributeError:
+                return getattr(self.get_query_set(), attr, *args)
+    return ChainedManager()
+
+class TempStatus(models.Model):
+    class Meta:
+        verbose_name = _('Order status')
+        verbose_name_plural = _('Order statuses')
+        ordering = ['modified']
+        db_table = 'basket_temp_status'
+
+    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
+    order = models.ForeignKey('Order')
+
+    modified = models.DateTimeField(default=lambda: datetime.now(),
+        verbose_name=_('Last modified date'))
+    comment = models.CharField(max_length=500, verbose_name=_('Comment'),
+        blank=True, null=True)
 
 class Status(models.Model):
     class Meta:
@@ -41,85 +83,30 @@ class OrderStatus(models.Model):
     def __unicode__(self):
         return self.type.name
 
-
-class OrderManager(models.Manager):
-    '''
-    Custom manager for basket
-    methods: 
-        TODO: methods
-    '''
-
-    def from_uid(self, uid):
-        '''
-        Utility method, returns QuerySet of order objects 
-        referenced to given uid: User id or session key
-        
-        Returns empty queryset if nothing found
-        '''
-        kwargs = resolve_uid(uid)
-        if len(kwargs):
-            return self.get_query_set().filter(**kwargs)
-        else:
-            return self.get_empty_query_set()
-
-    def create_from_uid(self, uid):
-        '''
-        Returns new order referenced to given uid: user id or session key
-        '''
-        kwargs = resolve_uid(uid)
-        if len(kwargs):
-            return self.get_query_set().create(**kwargs)
-        else:
-            return self.get_empty_query_set()
-
-    def get_order(self, uid, create=False):
-        '''
-            Get or create order, linked to given user or session.
-            uid - User instance or session key (str)
-        '''
-        try:
-            order = self.from_uid(uid).get(status__isnull=True)
-        except Order.DoesNotExist:
-            if create:
-                order = self.create_from_uid(uid)
-            else:
-                order = None
-        return order
-
-    def get_last(self, uid):
-        '''
-        Return last order for given UID, supposed to be used after order confirmation:
-        Notice: We should create order and redirect user, so he couldn't resend POST again.
-                But order is already created at this moment, and request has no order attribute.
-                So, I decided fetch last order from database with 'new' status   
-        '''
-        new_status = Status.objects.all()[0]
-        last_queryset = self.from_uid(uid).filter(status=new_status
-            ).order_by('-orderstatus__date')
-        if last_queryset.count():
-            return last_queryset[0]
-        else:
-            return None
+    def __unicode__(self):
+        return 'Order #%d status' % (self.order.id)
 
 
-    def history(self, uid):
-        '''
-        Returns closed orders of given user or session 
-        '''
-        return self.from_uid(uid).filter(status__closed=True)
+class OrderQuerySet(models.query.QuerySet):
+
+    def active_orders(self):
+        '''Filters active orders, which can be changed by user'''
+        return self.annotate(num_statuses=Count('status')).filter(
+            num_statuses=1).filter(status__status=STATUS_PENDING)
 
 
 class Order(models.Model):
     class Meta:
-        verbose_name = u'Заказ'
-        verbose_name_plural = u'Заказы'
+        verbose_name = _('Order')
+        verbose_name_plural = _('Orders')
 
-    user = models.ForeignKey(User, verbose_name=u'Пользватель', null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session = models.ForeignKey(Session, null=True, blank=True)
-    status = models.ManyToManyField('Status', through='OrderStatus')
+    session_key = models.CharField(verbose_name=_('Session key'),
+        max_length=40, null=True, blank=True)
     form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
 
-    objects = OrderManager()
+    objects = query_set_factory('Order', OrderQuerySet)
 
     def registered(self):
         '''
@@ -129,8 +116,22 @@ class Order(models.Model):
             return False
         else:
             return True
-    registered.short_description = u'Зарегистрирован'
+    registered.short_description = _('Registered user')
     registered.boolean = True
+
+    @classmethod
+    def from_request(cls, request):
+        order = cls()
+        if request.user.is_authenticated():
+            order.user = request.user
+        else:
+            order.session_key = request.session.session_key
+        order.save()
+        comment = ugettext('Automatically created status')
+        Status.objects.create(status=STATUS_PENDING, order=order,
+            comment=comment)
+        request.session['order_id'] = order.id
+        return order
 
     def add_item(self, item):
         item_ct = ContentType.objects.get_for_model(item)
@@ -182,45 +183,26 @@ class Order(models.Model):
         total_price = Decimal('0.0')
         for basket_item in self.items.all():
             try:
-                total_price += (basket_item.get_price() * basket_item.quantity)
+                total_price += basket_item.get_sum()
             except AttributeError:
                 pass
             total_goods += basket_item.quantity
-        return {'goods': total_goods, 'price': total_price}
+        return {'goods': total_goods, 'summary': total_price}
 
     def goods(self):
         return self.calculate()['goods']
-    goods.short_description = u'Кол-во товаров'
+    goods.short_description = _('Total items in basket')
 
-    def price(self):
-        return self.calculate()['price']
-    price.short_description = u'Сумма'
+    def summary(self):
+        return self.calculate()['summary']
+    summary.short_description = _('Total price')
+
+    def get_status(self):
+        return self.status_set.latest('modified')
+    get_status.short_description = _('Order status')
 
     def empty(self):
         return self.goods() == 0
-
-    def get_uid(self):
-        if self.registered():
-            return self.user
-        else:
-            return self.session
-
-    def get_status(self):
-        if self.orderstatus_set.count():
-            return self.orderstatus_set.latest('date').type
-        else:
-            return u'Не оформлен'
-    get_status.short_description = u'Статус заказа'
-
-    def get_form_data(self):
-        from basket.forms import OrderForm
-        result = {}
-        if self.form_data:
-            for field_name, value in simplejson.loads(self.form_data).iteritems():
-                result.update({
-                    field_name: (value, OrderForm.base_fields[field_name].label),
-                })
-        return result
 
     def __unicode__(self):
         return 'order #%s' % self.id
@@ -236,11 +218,31 @@ class BasketItem(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
-    quantity = models.IntegerField(u'Количество')
+    quantity = models.IntegerField(verbose_name=_('Quantity'))
 
     def get_price(self):
-        return getattr(self.content_object, PRICE_ATTR)
+        if callable(PRICE_ATTR):
+            value = PRICE_ATTR(self.content_object)
+        else:
+            value = getattr(self.content_object, PRICE_ATTR)
+        if callable(value):
+            value = value()
+        return value
 
-def get_status_types():
-    '''Return chioces for status field'''
-    return [(st.id, st.name) for st in Status.objects.all()]
+    def get_sum(self):
+        return self.get_price() * self.quantity
+
+def send_email(sender, **kwargs):
+    '''Send email when order issued'''
+    order = kwargs['order']
+    print 'Alarm! New order!'
+    print order
+
+def change_status(sender, **kwargs):
+    order = kwargs['order']
+    comment = ugettext('Automatically created status')
+    Status.objects.create(status=STATUS_NEW, order=order,
+        comment=comment)
+
+order_submit.connect(send_email, sender=Order)
+order_submit.connect(change_status, sender=Order)
