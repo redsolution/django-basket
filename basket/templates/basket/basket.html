@@ -45,16 +45,16 @@ $(document).ready(function() {
             <input type="submit" id="basket-refresh" value="{% trans 'Update items' %}" />
         </p>
 	</form>
+    {# if you want, you can show order info form here #}
+    
+    <form action="{% url order_confirm %}" method="POST">
+        {{ order_form.as_p }}
+        {% csrf_token %}
+        <input type="submit" value="{% trans 'Submit order' %}" />
+    </form>
 {% else %}
 	<p>{% trans 'Your basket is empty' %}</p>
 {% endif %}
 
-{# if you want, you can show order info form here #}
-
-<form action="{% url order_confirm %}" method="POST">
-    {{ order_form.as_p }}
-    {% csrf_token %}
-    <input type="submit" value="{% trans 'Submit order' %}" />
-</form>
 
 {% endblock content %}
