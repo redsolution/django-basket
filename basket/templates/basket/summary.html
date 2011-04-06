@@ -1,10 +1,15 @@
-{% load i18n pytils_numeral %}
+{% load i18n %}
 
 {% if request.order and not request.order.empty %}
     <p>
-    {% blocktrans with request.order.goods as items and request.order.summary as price and request.order.goods|choose_plural:"item1, items2, items5" as pluarized_items %}
-    {{ items }} {{ pluarized_items }} in basket. Total cost {{ price }}
+    {% blocktrans with request.order.goods as items and request.order.summary as price  %}
+    {{ items }} items in basket. Total cost {{ price }}
     {% endblocktrans %}
+    {# use for russian translation #}
+    {% comment %}
+    {% load pytils_numeral %}
+    {{ request.order.goods|choose_plural:"item1, items2, items5" }}
+    {% endcomment %}
     </p>
     <a href="{% url basket %}" title="{% trans 'Submit order' %}">{% trans 'Go to basket page' %}</a></p>
 {% else %}

@@ -1,7 +1,7 @@
 {% extends "basket/base.html" %}
+{% load i18n %}
 
-{% block title %}Корзина{% endblock title %}
-{% block content_title %}Корзина{% endblock content_title %}
+{% block title %}{% trans 'Basket' %}{% endblock title %}
 
 {% block content %}
 <script type="text/javascript">
@@ -18,22 +18,22 @@ $(document).ready(function() {
 	    <table class="checkout">
 	        <tr>
 	            <th>&nbsp;</th>
-	            <th>Наименование товара</th>
-	            <th>Цена, руб.</th>
-	            <th>Кол-во, шт.</th>
-	            <th>Сумма, руб.</th>
+	            <th>{% trans 'Item name' %}</th>
+	            <th>{% trans 'Price' %}</th>
+	            <th>{% trans 'Quantity' %}</th>
+	            <th>{% trans 'Total' %}</th>
 	        </tr>
 	        {% for form in formset.forms %}
 			<tr>
 	            <td>{{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
-	            <td><a target="_blank" href="{{ form.instance.content_object.get_absolute_url }}" title="Перейти на страницу товара">{{ form.instance.content_object }}</a></td>
+	            <td><a target="_blank" href="{{ form.instance.content_object.get_absolute_url }}" title="{% trans 'Go to item page' %}">{{ form.instance.content_object }}</a></td>
 				<td>{{ form.instance.get_price }}</td>
 				<td>{{ form.quantity }}{{ form.quantity.errors }}</td>
 				<td>{{ form.instance.get_sum }}</td>
 			</tr>
 	        {% endfor %}
 	        <tr>
-	            <th colspan="3">Итого</th>
+	            <th colspan="3">{% trans 'Total' %}</th>
 	            <th>{{ order.goods }}</th>
 	            <th>{{ order.summary }}</th>
 	        </tr>
@@ -41,12 +41,12 @@ $(document).ready(function() {
         <p>
 		    {{ formset.management_form }}
 		    {% csrf_token %}
-            <input type="submit" value="Оформить заказ" />
-            <input type="submit" id="basket-refresh" value="Пересчитать" />
+            <input type="submit" value="{% trans 'Go to checkout' %}" />
+            <input type="submit" id="basket-refresh" value="{% trans 'Update items' %}" />
         </p>
 	</form>
 {% else %}
-	<p>Ваша корзина пуста</p>
+	<p>{% trans 'Your basket is empty' %}</p>
 {% endif %}
 
 {# if you want, you can show order info form here #}
@@ -54,6 +54,7 @@ $(document).ready(function() {
 <form action="{% url order_confirm %}" method="POST">
     {{ order_form.as_p }}
     {% csrf_token %}
+    <input type="submit" value="{% trans 'Submit order' %}" />
 </form>
 
 {% endblock content %}
