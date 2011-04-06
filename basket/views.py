@@ -70,6 +70,7 @@ def add_to_basket(request):
     # Automatically create order if it does not exist
     if request.order is None:
         order = Order.from_request(request)
+        request.order = order
     else:
         order = request.order
 

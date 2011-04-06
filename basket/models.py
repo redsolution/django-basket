@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
+from django.db.models import Count
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
@@ -60,9 +61,10 @@ class Status(models.Model):
 
 class OrderQuerySet(models.query.QuerySet):
 
-    def new_orders(self):
+    def active_orders(self):
         '''Filters active orders, which can be changed by user'''
-        return self.filter(status__status=STATUS_NEW)
+        return self.annotate(num_statuses=Count('status')).filter(
+            num_statuses=1).filter(status__status=STATUS_PENDING)
 
 
 class Order(models.Model):
@@ -96,7 +98,7 @@ class Order(models.Model):
             order.session_key = request.session.session_key
         order.save()
         comment = ugettext('Automatically created status')
-        Status.objects.create(status=STATUS_NEW, order=order,
+        Status.objects.create(status=STATUS_PENDING, order=order,
             comment=comment)
         request.session['order_id'] = order.id
         return order
@@ -206,4 +208,11 @@ def send_email(sender, **kwargs):
     print 'Alarm! New order!'
     print order
 
+def change_status(sender, **kwargs):
+    order = kwargs['order']
+    comment = ugettext('Automatically created status')
+    Status.objects.create(status=STATUS_NEW, order=order,
+        comment=comment)
+
 order_submit.connect(send_email, sender=Order)
+order_submit.connect(change_status, sender=Order)
