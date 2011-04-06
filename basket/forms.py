@@ -36,3 +36,6 @@ class DefaultOrderForm(forms.Form):
         max_length=50, required=False)
     comment = forms.CharField(label=_('Comment for us'), max_length=255,
         widget=forms.Textarea(), required=False)
+
+    def __init__(self, request, *args, **kwds):
+        return super(DefaultOrderForm, self).__init__(*args, **kwds)

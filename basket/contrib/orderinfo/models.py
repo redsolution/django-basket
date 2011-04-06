@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django.db.models.signals import post_save
 from basket.models import Order
+from basket.signals import order_submit
+from basket import settings as basket_settings
+from django.conf import settings
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from datetime.datetime import now
 
 class OrderInfo(models.Model):
     '''
@@ -28,7 +29,15 @@ class OrderInfo(models.Model):
         blank=True, null=True)
 
 
-def connect_to_order(sender, instance, created):
-    if created:
-        OrderInfo.objects.create(order=instance, registered=now())
-post_save.connect(connect_to_order, Order)
+def add_orderinfo(sender, **kwargs):
+    order = kwargs['order']
+    cleaned_data = kwargs['data']
+    cleaned_data.update({
+        'order': order,
+    })
+    OrderInfo.objects.create(**cleaned_data)
+
+order_submit.connect(add_orderinfo, sender=Order)
+
+if basket_settings.BASKET_FORM == basket_settings.DEFAULT_BASKET_FORM:
+    basket_settings.BASKET_FORM = 'basket.contrib.orderinfo.forms.OrderInfoForm'
