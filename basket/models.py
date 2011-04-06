@@ -52,10 +52,10 @@ class Status(models.Model):
         verbose_name=_('Last modified date'))
     comment = models.CharField(max_length=100, verbose_name=_('Comment'),
         blank=True, null=True)
-    user = models.ForeignKey('auth.User', verbose_name=_('Modified by'), null=True, blank=True)
+
 
     def __unicode__(self):
-        return self.type.name
+        return 'Order #%d %s' % (self.order.id, self.get_status_display())
 
 
 class OrderQuerySet(models.query.QuerySet):
