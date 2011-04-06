@@ -49,8 +49,7 @@ def confirm(request):
     if request.method == 'POST':
         form = get_order_form()(request.POST)
         if form.is_valid():
-            form.save()
-            order_submit.send(sender=Order, order=order, post=request.POST)
+            order_submit.send(sender=Order, order=order, data=form.cleaned_data)
             return HttpResponseRedirect(reverse('basket-thankyou'))
     else:
         form = get_order_form()()
