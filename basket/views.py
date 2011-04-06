@@ -50,10 +50,10 @@ def confirm(request):
         form = get_order_form()(request.POST)
         if form.is_valid():
             form.save()
-            order_submit.send(order=order, post=request.POST)
-            return HttpResponseRedirect(reverse('order_thankyou'))
+            order_submit.send(sender=Order, order=order, post=request.POST)
+            return HttpResponseRedirect(reverse('basket-thankyou'))
     else:
-        form = get_order_form()(instance=order.orderinfo)
+        form = get_order_form()()
     return {'form': form, 'order': order}
 
 

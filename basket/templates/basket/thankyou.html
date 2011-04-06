@@ -1,10 +1,13 @@
 {% extends "basket/base.html" %}
+{% load i18n %}
 
-{% block title %}Заказ принят!{% endblock title %}
-{% block content_title %}Заказ принят!{% endblock content_title %}
+{% block title %}{% trans 'Order completed!' %}{% endblock title %}
 
 {% block content %}
-    <p>Поздравляем, ваш заказ получен. Номер Вашего заказа {{ order.id }}.
-    Статус Вы сможете отследить на <a href="{% url order_status_for_id order.id %}">странице проверки статуса заказа</a>. 
-    В течение часа с вами свяжется наш менеджер для подтверждения наличия заказанных товаров.</p>
+    <p>
+    {% blocktrans %}
+    Congratulations, your order is received.
+    Within an hour our manager will contact you to confirm the availability of goods ordered.
+    {% endblocktrans %}
+    </p>
 {% endblock %}
