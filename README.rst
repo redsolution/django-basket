@@ -19,7 +19,7 @@ In details
 -----------
 
 Branch 0.4 branch assumes use plug-ins for order details, order tracking, 
-payment or shipping. In previous branches all information models were lcoated in 
+payment or shipping. In previous branches all information models were located in 
 ``basket`` app.
 
 Changes with Order model:
