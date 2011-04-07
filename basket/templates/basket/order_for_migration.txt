@@ -1,0 +1,4 @@
+===Данные заказа #{{ order.id|stringformat:"06d" }}===
+{% for key, value in form_data.iteritems %}
+{{ value.1 }}: {{ value.0 }}
+{% endfor %}

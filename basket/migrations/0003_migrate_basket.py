@@ -9,11 +9,19 @@ import datetime
 
 
 def comment_order(order):
+    from basket.forms import OrderForm
+
     if order.form_data:
         cleaned_data = simplejson.loads(order.form_data)
-        message = loader.render_to_string('basket/order.txt', {
+        result = {}
+        for field_name, value in cleaned_data.iteritems():
+            result.update({
+                field_name: (value, OrderForm.base_fields[field_name].label),
+            })
+
+        message = loader.render_to_string('basket/order_for_migration.txt', {
             'order': order,
-            'data': cleaned_data,
+            'form_data': result,
         })
         return message
 
