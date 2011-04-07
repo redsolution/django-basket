@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from basket.settings import PRICE_ATTR
-from basket.signals import order_submit
 from datetime import datetime
 from decimal import Decimal
 from django.contrib.auth.models import User
@@ -232,17 +231,3 @@ class BasketItem(models.Model):
     def get_sum(self):
         return self.get_price() * self.quantity
 
-def send_email(sender, **kwargs):
-    '''Send email when order issued'''
-    order = kwargs['order']
-    print 'Alarm! New order!'
-    print order
-
-def change_status(sender, **kwargs):
-    order = kwargs['order']
-    comment = ugettext('Automatically created status')
-    Status.objects.create(status=STATUS_NEW, order=order,
-        comment=comment)
-
-order_submit.connect(send_email, sender=Order)
-order_submit.connect(change_status, sender=Order)
