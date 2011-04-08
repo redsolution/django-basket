@@ -39,20 +39,6 @@ def query_set_factory(model_name, query_set_class):
                 return getattr(self.get_query_set(), attr, *args)
     return ChainedManager()
 
-class TempStatus(models.Model):
-    class Meta:
-        verbose_name = _('Order status')
-        verbose_name_plural = _('Order statuses')
-        ordering = ['modified']
-        db_table = 'basket_temp_status'
-
-    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
-    order = models.ForeignKey('Order')
-
-    modified = models.DateTimeField(default=lambda: datetime.now(),
-        verbose_name=_('Last modified date'))
-    comment = models.CharField(max_length=500, verbose_name=_('Comment'),
-        blank=True, null=True)
 
 class Status(models.Model):
     class Meta:
@@ -104,6 +90,11 @@ class Order(models.Model):
     session_key = models.CharField(verbose_name=_('Session key'),
         max_length=40, null=True, blank=True)
     form_data = models.TextField(verbose_name=u'Данные клиента', null=True)
+    # fields for data copy
+    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
+    created = models.DateTimeField(verbose_name=_('Created date'), auto_now_add=True)
+    comment = models.CharField(max_length=100, verbose_name=_('Comment'),
+        blank=True, null=True)
 
     objects = query_set_factory('Order', OrderQuerySet)
 
@@ -195,10 +186,6 @@ class Order(models.Model):
     def summary(self):
         return self.calculate()['summary']
     summary.short_description = _('Total price')
-
-    def get_status(self):
-        return self.status_set.latest('modified')
-    get_status.short_description = _('Order status')
 
     def empty(self):
         return self.goods() == 0
