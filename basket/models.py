@@ -57,7 +57,7 @@ class Order(models.Model):
         max_length=40, null=True, blank=True)
     # fields from order status
     status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
-    created = models.DateTimeField(verbose_name=_('Created date'), auto_now_add=True)
+    created = models.DateTimeField(verbose_name=_('Created date'))
     comment = models.CharField(max_length=100, verbose_name=_('Comment'),
         blank=True, null=True)
 
