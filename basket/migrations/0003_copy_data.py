@@ -1,42 +1,79 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
+from django.utils import simplejson
+from django.template import loader
+import datetime
+from basket.models import STATUS_NEW, STATUS_PROCESS, STATUS_CLOSED, \
+    STATUS_ERROR, STATUS_PENDING
 
-class Migration(SchemaMigration):
+
+def comment_order(order):
+    from basket.forms import OrderForm
+
+    if order.form_data:
+        cleaned_data = simplejson.loads(order.form_data)
+        result = {}
+        for field_name, value in cleaned_data.iteritems():
+            result.update({
+                field_name: (value, OrderForm.base_fields[field_name].label),
+            })
+
+        message = loader.render_to_string('basket/order_for_migration.txt', {
+            'order': order,
+            'form_data': result,
+        })
+        return message
+
+class Migration(DataMigration):
 
     def forwards(self, orm):
+        "Write your forwards methods here."
+        status_map = {
+            u'новый': STATUS_NEW,
+            u'оплачено': STATUS_PROCESS,
+            u'отправлено': STATUS_CLOSED,
+            u'ошибка': STATUS_ERROR
+        }
 
-        # Adding model 'TempStatus'
-        db.create_table('basket_temp_status', (
-            ('status', self.gf('django.db.models.fields.IntegerField')()),
-            ('comment', self.gf('django.db.models.fields.CharField')(max_length=500, null=True, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2011, 4, 6, 17, 21, 10, 445969))),
-            ('order', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['basket.Order'])),
-        ))
-        db.send_create_signal('basket', ['TempStatus'])
+        for order in orm.Order.objects.all():
+            # copy session keys...
+            if order.session is not None:
+                order.session_key = order.session_id
 
-        # Adding field 'Order.session_key'
-        db.add_column('basket_order', 'session_key', self.gf('django.db.models.fields.CharField')(max_length=40, null=True, blank=True), keep_default=False)
+            # copy comment
+            order.comment = comment_order(order)
 
+            # save created date
+            if (order.orderstatus_set.all().count()):
+                first_date = order.orderstatus_set.latest('-date').date
+                pending_date = first_date - datetime.timedelta(1)
+            else:
+                pending_date = datetime.datetime.now()
+            order.created = pending_date
+
+            # save last status
+            if (order.orderstatus_set.all().count()):
+                status_type = order.orderstatus_set.latest('date').type
+                if status_type.name in status_map:
+                    status = status_map[status_type.name]
+                else:
+                    status = STATUS_PROCESS
+                    order.comment += u'\nСтатус: %s' % status_type.name
+                order.status = status
+            order.save()
 
     def backwards(self, orm):
-
-        # Deleting model 'TempStatus'
-        db.delete_table('basket_temp_status')
-
-        # Deleting field 'Order.session_key'
-        db.delete_column('basket_order', 'session_key')
-
+        "Write your backwards methods here."
 
     models = {
         'auth.group': {
             'Meta': {'object_name': 'Group'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'blank': 'True'})
+            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
         },
         'auth.permission': {
             'Meta': {'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
@@ -50,7 +87,7 @@ class Migration(SchemaMigration):
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'blank': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'blank': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
@@ -58,7 +95,7 @@ class Migration(SchemaMigration):
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'blank': 'True'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'basket.basketitem': {
@@ -71,16 +108,19 @@ class Migration(SchemaMigration):
         },
         'basket.order': {
             'Meta': {'object_name': 'Order'},
+            'comment': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'form_data': ('django.db.models.fields.TextField', [], {'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sessions.Session']", 'null': 'True', 'blank': 'True'}),
             'session_key': ('django.db.models.fields.CharField', [], {'max_length': '40', 'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.IntegerField', [], {}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
         'basket.orderstatus': {
             'Meta': {'object_name': 'OrderStatus'},
             'comment': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2011, 4, 6, 17, 21, 10, 505315)'}),
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2011, 4, 8, 13, 2, 24, 395750)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'order': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['basket.Order']"}),
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['basket.Status']"}),
@@ -91,14 +131,6 @@ class Migration(SchemaMigration):
             'closed': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '20'})
-        },
-        'basket.tempstatus': {
-            'Meta': {'object_name': 'TempStatus', 'db_table': "'basket_temp_status'"},
-            'comment': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2011, 4, 6, 17, 21, 10, 514458)'}),
-            'order': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['basket.Order']"}),
-            'status': ('django.db.models.fields.IntegerField', [], {})
         },
         'contenttypes.contenttype': {
             'Meta': {'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
