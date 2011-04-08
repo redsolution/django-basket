@@ -44,8 +44,7 @@ class OrderQuerySet(models.query.QuerySet):
 
     def active_orders(self):
         '''Filters active orders, which can be changed by user'''
-        return self.annotate(num_statuses=Count('status')).filter(
-            num_statuses=1).filter(status__status=STATUS_PENDING)
+        return self.filter(status=STATUS_PENDING)
 
 
 class Order(models.Model):
