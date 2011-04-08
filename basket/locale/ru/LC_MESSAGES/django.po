@@ -1,23 +1,30 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: Ivan Gromov <ivan.gromov@redsolution.ru>\n"
-"Language-Team: \n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
-"Content-Transfer-Encoding: 8bit\n"
-
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: forms.py:32
-#: contrib/orderinfo/models.py:21
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-04-08 17:22+0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: admin.py:20
+msgid "Order data"
+msgstr "Данные заказа"
+
+#: forms.py:32 contrib/orderinfo/models.py:21
 msgid "Customer name"
-msgstr "Фамилия имя заказчика"
+msgstr "Имя заказчика"
 
 #: forms.py:33
 msgid "Customer phone"
@@ -33,92 +40,86 @@ msgstr "Удобное время для звонка"
 
 #: forms.py:37
 msgid "Comment for us"
-msgstr "Комментарий для нас"
+msgstr "Комментарий для менеджера"
 
-#: models.py:22
+#: models.py:24
 msgid "Pending"
-msgstr "Незавершенный"
+msgstr "В ожидании"
 
-#: models.py:23
+#: models.py:25
 msgid "New"
 msgstr "Новый"
 
-#: models.py:24
-msgid "Process"
-msgstr "В обработке"
-
-#: models.py:25
-msgid "Closed & OK"
-msgstr "Успешно завершен"
-
 #: models.py:26
+msgid "Process"
+msgstr "В работе"
+
+#: models.py:27
+msgid "Closed & OK"
+msgstr "Успешно закрыт"
+
+#: models.py:28
 msgid "Closed with error"
-msgstr "Заверешен с ошибкой"
-
-#: models.py:45
-#: models.py:49
-#: models.py:172
-msgid "Order status"
-msgstr "Статус заказа"
-
-#: models.py:46
-msgid "Order statuses"
-msgstr "Статусы заказа"
-
-#: models.py:53
-msgid "Last modified date"
-msgstr "Дата последнего изменения"
+msgstr "Закрыт с ошибкой"
 
 #: models.py:54
-#: contrib/orderinfo/models.py:28
-msgid "Comment"
-msgstr "Комментарий"
-
-#: models.py:72
 msgid "Order"
 msgstr "Заказ"
 
-#: models.py:73
+#: models.py:55
 msgid "Orders"
 msgstr "Заказы"
 
-#: models.py:75
+#: models.py:57
 msgid "User"
 msgstr "Пользователь"
 
-#: models.py:76
+#: models.py:58
 msgid "Session key"
 msgstr "Ключ сессии"
 
-#: models.py:89
+#: models.py:61 models.py:157
+msgid "Order status"
+msgstr "Статус заказа"
+
+#: models.py:62
+msgid "Created date"
+msgstr "Дата создания"
+
+#: models.py:63 contrib/orderinfo/models.py:28
+msgid "Comment"
+msgstr "Комментарий"
+
+#: models.py:75
 msgid "Registered user"
 msgstr "Зарегистрированный пользователь"
 
-#: models.py:100
-#: models.py:213
-msgid "Automatically created status"
-msgstr "Автоматически созданный статус"
-
-#: models.py:164
+#: models.py:149
 msgid "Total items in basket"
-msgstr "Всего в корзине"
+msgstr "Всего товаров в корзине"
 
-#: models.py:168
+#: models.py:153
 msgid "Total price"
 msgstr "Общая стоимость"
 
-#: models.py:191
-#: templates/admin/basket/order/change_form.html:30
+#: models.py:176 templates/admin/basket/order/change_form.html:30
 #: templates/basket/basket.html:23
 msgid "Quantity"
 msgstr "Количество"
 
+#: models.py:215
+msgid "Automatically created status"
+msgstr "Автоматически созданный статус"
+
+#: models.py:220
+msgid "New order"
+msgstr "Новый заказ"
+
 #: views.py:95
 msgid "Basket does not exist"
-msgstr "Заказа не существует"
+msgstr "Корзина не существует"
 
-#: contrib/orderinfo/models.py:15
-#: contrib/orderinfo/models.py:16
+#: contrib/orderinfo/models.py:15 contrib/orderinfo/models.py:16
 msgid "Order information"
 msgstr "Информация о заказе"
 
@@ -140,7 +141,7 @@ msgstr "Номер телефона"
 
 #: contrib/orderinfo/models.py:26
 msgid "Email"
-msgstr "Электронная почта"
+msgstr "Электронный адрес"
 
 #: templates/admin/basket/order/change_form.html:7
 msgid "History"
@@ -148,35 +149,40 @@ msgstr "История"
 
 #: templates/admin/basket/order/change_form.html:8
 msgid "View on site"
-msgstr "Смотреть на сайте"
+msgstr "Посмотреть на сайте"
+
+#: templates/admin/basket/order/change_form.html:19
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Пожалуйста, исправьте ошибку ниже"
+msgstr[1] "Пожалуйста, исправьте ошибки ниже"
 
 #: templates/admin/basket/order/change_form.html:26
 msgid "Online order"
-msgstr "Онлайн-заказ"
+msgstr "Он-лайн заказ"
 
 #: templates/admin/basket/order/change_form.html:29
 #: templates/basket/basket.html:21
 msgid "Item name"
-msgstr "Название"
+msgstr "Наименование"
 
 #: templates/admin/basket/order/change_form.html:31
 #: templates/basket/basket.html:22
 msgid "Price"
-msgstr "Стоимость"
+msgstr "Цена"
 
 #: templates/admin/basket/order/change_form.html:32
-#: templates/basket/basket.html:24
-#: templates/basket/basket.html.py:36
+#: templates/basket/basket.html:24 templates/basket/basket.html.py:36
 msgid "Total"
-msgstr "Всего"
+msgstr "Итого"
 
 #: templates/admin/basket/order/change_form.html:44
 msgid "Order price"
-msgstr "Сотимость заказа"
+msgstr "Стоимость заказа"
 
 #: templates/admin/basket/order/change_form.html:44
 msgid "Items quantity"
-msgstr "Количество товаров"
+msgstr "Количество"
 
 #: templates/admin/basket/order/change_form.html:48
 msgid "User id"
@@ -192,23 +198,21 @@ msgstr "Корзина"
 
 #: templates/basket/basket.html:29
 msgid "Go to item page"
-msgstr "Перейти на страницу товара"
+msgstr "Перейти к странице товара"
 
 #: templates/basket/basket.html:44
 msgid "Go to checkout"
-msgstr "Перейти к оформлению заказа"
+msgstr "Перейти к оформлению"
 
 #: templates/basket/basket.html:45
 msgid "Update items"
-msgstr "Сохранить список покупок"
+msgstr "Обновить товары в корзине"
 
-#: templates/basket/basket.html:53
-#: templates/basket/summary.html:14
+#: templates/basket/basket.html:53 templates/basket/summary.html:14
 msgid "Submit order"
 msgstr "Отправить заказ"
 
-#: templates/basket/basket.html:56
-#: templates/basket/empty.html:4
+#: templates/basket/basket.html:56 templates/basket/empty.html:4
 #: templates/basket/empty.html.py:7
 msgid "Your basket is empty"
 msgstr "Ваша корзина пуста"
@@ -223,7 +227,7 @@ msgstr "Добавлено в корзину"
 
 #: templates/basket/confirm.html:4
 msgid "Checkout"
-msgstr "Заказ"
+msgstr "Оформление"
 
 #: templates/basket/confirm.html:12
 msgid "Back"
@@ -245,12 +249,12 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"    %(items)s товаров в козине. Общая стоимость %(price)s\n"
+" Всего %(items)s товаров в корзине. Общая стоимость %(price)s\n"
 "    "
 
 #: templates/basket/summary.html:14
 msgid "Go to basket page"
-msgstr "Перейти на страницу корзины"
+msgstr "Перейти к странице корзины"
 
 #: templates/basket/summary.html:16
 msgid "Basket is empty"
@@ -258,17 +262,17 @@ msgstr "Корзина пуста"
 
 #: templates/basket/thankyou.html:4
 msgid "Order completed!"
-msgstr "Заказ завершен!"
+msgstr "Заказ принят!"
 
 #: templates/basket/thankyou.html:8
 msgid ""
 "\n"
 "    Congratulations, your order is received.\n"
-"    Within an hour our manager will contact you to confirm the availability of goods ordered.\n"
+"    Within an hour our manager will contact you to confirm the availability "
+"of goods ordered.\n"
 "    "
 msgstr ""
 "\n"
-"Поздравляем, Ваш заказ принят!\n"
-"В течение часа менеджер свяжется с Вами, чтобы уточнить состав заказа.\n"
+"    Поздравляем, Ваш заказ принят.\n"
+"    В течение часа менеджер свяжется с Вами для оформления закз.\n"
 "    "
-
