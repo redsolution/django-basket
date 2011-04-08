@@ -9,7 +9,6 @@ from django.utils.translation import ugettext_lazy as _
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Order
-    comment = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}))
 
 class OrderAdmin(admin.ModelAdmin):
     model = Order

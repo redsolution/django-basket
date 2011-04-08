@@ -82,10 +82,9 @@ class Order(models.Model):
             order.user = request.user
         else:
             order.session_key = request.session.session_key
+        order.status = STATUS_PENDING
+        order.created = datetime.now()
         order.save()
-        comment = ugettext('Automatically created status')
-        Status.objects.create(status=STATUS_PENDING, order=order,
-            comment=comment)
         request.session['order_id'] = order.id
         return order
 
