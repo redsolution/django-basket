@@ -5,24 +5,24 @@ from south.v2 import SchemaMigration
 from django.db import models
 
 class Migration(SchemaMigration):
-    
+
     def forwards(self, orm):
-        
+
         # Adding field 'Order.status'
         db.add_column('basket_order', 'status', self.gf('django.db.models.fields.IntegerField')(default=0), keep_default=False)
 
         # Adding field 'Order.comment'
-        db.add_column('basket_order', 'comment', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True), keep_default=False)
+        db.add_column('basket_order', 'comment', self.gf('django.db.models.fields.CharField')(max_length=1000, null=True, blank=True), keep_default=False)
 
         # Adding field 'Order.created'
         db.add_column('basket_order', 'created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, default=datetime.date(2011, 4, 8), blank=True), keep_default=False)
 
         # Adding field 'Order.session_key'
         db.add_column('basket_order', 'session_key', self.gf('django.db.models.fields.CharField')(max_length=40, null=True, blank=True), keep_default=False)
-    
-    
+
+
     def backwards(self, orm):
-        
+
         # Deleting field 'Order.status'
         db.delete_column('basket_order', 'status')
 

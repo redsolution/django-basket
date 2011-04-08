@@ -48,7 +48,7 @@ class Migration(DataMigration):
 
             # save created date
             if (order.orderstatus_set.all().count()):
-                first_date = order.orderstatus_set.latest('-date').date
+                first_date = order.orderstatus_set.order_by('date')[0].date
                 pending_date = first_date - datetime.timedelta(1)
             else:
                 pending_date = datetime.datetime.now()
@@ -56,12 +56,12 @@ class Migration(DataMigration):
 
             # save last status
             if (order.orderstatus_set.all().count()):
-                status_type = order.orderstatus_set.latest('date').type
+                status_type = order.orderstatus_set.order_by('-date')[0].type
                 if status_type.name in status_map:
                     status = status_map[status_type.name]
                 else:
                     status = STATUS_PROCESS
-                    order.comment += u'\nСтатус: %s' % status_type.name
+                    order.comment = '\n'.join((u'\nСтатус: %s' % status_type.name, '%s' % order.comment))
                 order.status = status
             order.save()
 

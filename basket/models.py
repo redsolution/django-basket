@@ -93,7 +93,7 @@ class Order(models.Model):
     # fields for data copy
     status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
     created = models.DateTimeField(verbose_name=_('Created date'), auto_now_add=True)
-    comment = models.CharField(max_length=100, verbose_name=_('Comment'),
+    comment = models.CharField(max_length=1000, verbose_name=_('Comment'),
         blank=True, null=True)
 
     objects = query_set_factory('Order', OrderQuerySet)
