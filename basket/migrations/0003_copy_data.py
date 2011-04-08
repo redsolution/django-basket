@@ -48,8 +48,7 @@ class Migration(DataMigration):
 
             # save created date
             if (order.orderstatus_set.all().count()):
-                first_date = order.orderstatus_set.order_by('date')[0].date
-                pending_date = first_date - datetime.timedelta(1)
+                pending_date = order.orderstatus_set.order_by('date')[0].date
             else:
                 pending_date = datetime.datetime.now()
             order.created = pending_date
