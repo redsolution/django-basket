@@ -41,7 +41,7 @@
     {% endfor %}
     </table>
       <div class="form-row">
-      <h3>{% trans 'Order price' %}: {{ original.price }}<br/> {% trans 'Items quantity' %}: {{ original.goods }}</h3>
+      <h3>{% trans 'Order price' %}: {{ original.summary }}<br/> {% trans 'Items quantity' %}: {{ original.goods }}</h3>
       </div>
       {% if original.user %}
 	      <div class="form-row">
