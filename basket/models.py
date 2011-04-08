@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from basket.settings import PRICE_ATTR
 from basket.signals import order_submit
+from basket.utils import get_order_form
 from datetime import datetime
 from decimal import Decimal
 from django.contrib.auth.models import User
@@ -9,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.db.models import Count
 from django.db import models
+from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 
@@ -187,6 +189,21 @@ class BasketItem(models.Model):
     def get_sum(self):
         return self.get_price() * self.quantity
 
+
+def comment_order(order, form_data):
+    OrderForm = get_order_form()
+    result = {}
+    for field_name, value in form_data.iteritems():
+        result.update({
+            field_name: (value, OrderForm.base_fields[field_name].label),
+        })
+
+    message = loader.render_to_string('basket/order.txt', {
+        'order': order,
+        'form_data': result,
+    })
+    return message
+
 def send_email(sender, **kwargs):
     '''Send email when order issued'''
     order = kwargs['order']
@@ -195,9 +212,18 @@ def send_email(sender, **kwargs):
 
 def change_status(sender, **kwargs):
     order = kwargs['order']
+    form_data = kwargs['data']
+
     comment = ugettext('Automatically created status')
-    Status.objects.create(status=STATUS_NEW, order=order,
-        comment=comment)
+    order.status = STATUS_NEW
+    order.comment = '\n'.join((
+        '%s' % order.comment,
+        comment_order(order, form_data),
+        ugettext('New order'),
+    ))
+
+
+    order.save()
 
 order_submit.connect(send_email, sender=Order)
 order_submit.connect(change_status, sender=Order)

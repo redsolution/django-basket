@@ -4,10 +4,7 @@
 
 Итого {{ order.goods }} товаров на сумму {{ order.summary }} руб.
 
-=== Данные о заказчике ===
-
-ФИО:               {{ order.orderinfo.fio }}
-Электронная почта: {{ order.orderinfo.email }}
-Телефон:           {{ order.orderinfo.telephone }}
-Адрес:             {{ order.orderinfo.address }}
-Комментарии:       {{ order.orderinfo.comment }}
+===Данные заказа #{{ order.id|stringformat:"06d" }}===
+{% for key, value in form_data.iteritems %}
+{{ value.1 }}: {{ value.0 }}
+{% endfor %}
