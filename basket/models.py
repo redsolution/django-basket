@@ -40,25 +40,6 @@ def query_set_factory(model_name, query_set_class):
                 return getattr(self.get_query_set(), attr, *args)
     return ChainedManager()
 
-class Status(models.Model):
-    class Meta:
-        verbose_name = _('Order status')
-        verbose_name_plural = _('Order statuses')
-        ordering = ['modified']
-
-    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
-    order = models.ForeignKey('Order')
-
-    modified = models.DateTimeField(default=lambda: datetime.now(),
-        verbose_name=_('Last modified date'))
-    comment = models.CharField(max_length=100, verbose_name=_('Comment'),
-        blank=True, null=True)
-
-
-    def __unicode__(self):
-        return 'Order #%d %s' % (self.order.id, self.get_status_display())
-
-
 class OrderQuerySet(models.query.QuerySet):
 
     def active_orders(self):
@@ -75,6 +56,11 @@ class Order(models.Model):
     user = models.ForeignKey(User, verbose_name=_('User'), null=True, blank=True)
     session_key = models.CharField(verbose_name=_('Session key'),
         max_length=40, null=True, blank=True)
+    # fields from order status
+    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
+    created = models.DateTimeField(verbose_name=_('Created date'), auto_now_add=True)
+    comment = models.CharField(max_length=100, verbose_name=_('Comment'),
+        blank=True, null=True)
 
     objects = query_set_factory('Order', OrderQuerySet)
 
