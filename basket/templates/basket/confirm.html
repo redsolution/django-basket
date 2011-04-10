@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Checkout' %}{% endblock title %}
 
 {% block content %}
-    <form action="." method="post">
+    <form action="." id="basket_order_submit_form" method="post">
 	<table>
 		{{ form }}
         {% csrf_token %}

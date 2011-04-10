@@ -47,7 +47,7 @@ $(document).ready(function() {
 	</form>
     {# if you want, you can show order info form here #}
     
-    <form action="{% url order_confirm %}" method="POST">
+    <form action="{% url order_confirm %}" id="basket_order_submit_form" method="POST">
         {{ order_form.as_p }}
         {% csrf_token %}
         <input type="submit" value="{% trans 'Submit order' %}" />
