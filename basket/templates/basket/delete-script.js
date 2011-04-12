@@ -26,6 +26,8 @@ function updateElementIndex(el, prefix, ndx) {
     $(document).bind("del_success.basket", function(e, data){
         // update basket panel 
         $('#basket-summary').html(data);
+        // delete row 
+        $(e.el).parents('.dynamic-form').remove();
 
         // set new TOTAL_FORMS 
         var forms = $('.dynamic-form');
@@ -40,8 +42,6 @@ function updateElementIndex(el, prefix, ndx) {
             });
         }
     
-        // delete row 
-        $(e.el).parents('.dynamic-form').remove();
 
         // If basket is empty, reload page 
         if (forms.length===1) {
