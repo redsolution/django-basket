@@ -41,10 +41,9 @@ function updateElementIndex(el, prefix, ndx) {
                 updateElementIndex(this, prefix, i);
             });
         }
-    
 
-        // If basket is empty, reload page 
-        if (forms.length===1) {
+        // If basket is empty, reload page
+        if (forms.length===0) {
             $('#basket_page_forms').html('<p>{% trans "Your basket is empty" %}</p>');
         }
 

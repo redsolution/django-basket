@@ -21,8 +21,8 @@ class BasketItemForm(forms.ModelForm):
         if BASKET_OPTIONS_USE_KEEP:
             if not self.cleaned_data.get('keep', False):
                 self.cleaned_data['quantity'] = 0
-            self.instance.order.set_quantity(self.instance.content_object,
-                self.cleaned_data.get('quantity', 0))
+        self.instance.order.set_quantity(self.instance.content_object,
+            self.cleaned_data.get('quantity', 0))
 
 OrderFormset = inlineformset_factory(Order, BasketItem, extra=0,
     can_delete=False, form=BasketItemForm)
