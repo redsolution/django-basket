@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from basket.models import Order
+from basket.settings import BASKET_OPTIONS_USE_DELETE
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -9,7 +10,8 @@ _BASKET_JS_RE = \
     re.compile(r'(<script\W[^>]*\bsrc\s*=\s*(\'|"|)[^\'^\"]*basket.js(\'|"|)\b[^>]*>\W*</\s*script\s*>)', re.IGNORECASE)
 BASKET_URL_SCRIPT = '''
 <script type="text/javascript">
-    basket.add_url = '%s';
+basket.add_url = '%(add)s';
+basket.del_url = '%(del)s';
 </script>
 '''
 
@@ -40,9 +42,16 @@ class BasketMiddleware(object):
 
     def process_response(self, request, response):
         '''Add basket url to script'''
+        urls = {
+            'add': reverse('add_to_basket'),
+        }
+        if BASKET_OPTIONS_USE_DELETE:
+            urls['del'] = reverse('del_from_basket')
+        else:
+            urls['del'] = ''
         try:
             def add_url_definition(match):
-                return mark_safe(match.group() + BASKET_URL_SCRIPT % reverse('add_to_basket'))
+                return mark_safe(match.group() + BASKET_URL_SCRIPT % urls)
             response.content = _BASKET_JS_RE.sub(add_url_definition, response.content)
         except:
             return response

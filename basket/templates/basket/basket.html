@@ -4,16 +4,83 @@
 {% block title %}{% trans 'Basket' %}{% endblock title %}
 
 {% block content %}
+<style type="text/css">
+.delete {
+background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42u2SwQoAIAhD88vVLy8KBlaS0i1oJwP3piGVg0Skmpq8HjqZrWl9uwCbGAmwKYGZs/6iqgMyAdJuM8W2QmYKpLt/0AG9ASCv/oAnANd3AEjmAlFT1BypAV+PnRH5YehvAAAAAElFTkSuQmCC) left center no-repeat;
+padding-left:20px;
+}
+</style>
 <script type="text/javascript">
 <!--
 $(document).ready(function() {
-	$('#basket-refresh').click(function() {
-		$(this).after('<input type="hidden" name="refresh" value="1" />');
-	});
+    $('#basket-refresh').click(function() {
+        $(this).after('<input type="hidden" name="refresh" value="1" />');
+    });
+
+    // {% if delete %}
+    function updateElementIndex(el, prefix, ndx) {
+        var id_regex = new RegExp('(' + prefix + '-\\d+)');
+        var replacement = prefix + '-' + ndx;
+        if ($(el).attr("for")) {
+            $(el).attr("for", $(el).attr("for").replace(id_regex, replacement));
+        }
+        if (el.id) {
+            el.id = el.id.replace(id_regex, replacement);
+        }
+        if (el.name) {
+            el.name = el.name.replace(id_regex, replacement);
+        }
+    }
+    
+    // bind delete events 
+    $(document).bind("before_del.basket", function(e){
+        if (basket.num_forms.val() === 1) {
+            basket.do_delete = confirm("{% trans 'Are you sure about deleting last item?' %}"); 
+       }
+    });
+
+    var prefix = '{{ formset.prefix }}';
+    basket.num_forms = $('#id_'+prefix+'-TOTAL_FORMS');
+
+    $(document).bind("del_success.basket", function(e, data){
+        // update basket panel 
+        $('#basket-summary').html(data);
+
+        // set new TOTAL_FORMS 
+        var forms = $('.dynamic-form');
+        var formCount = parseInt(basket.num_forms.val(), 10);
+        basket.num_forms.val(forms.length);
+        
+        // update indexes and names 
+        var i;
+        for (i=0; i<formCount; i++) {
+            $(forms.get(i)).children().not(':last').children().each(function() {
+                updateElementIndex(this, prefix, i);
+            });
+        }
+    
+        // delete row 
+        $(e.el).parents('.dynamic-form').remove();
+
+        // If basket is empty, reload page 
+        console.log(forms.length);
+        if (forms.length===1) {
+            $('#basket_page_forms').html('<p>{% trans "Your basket is empty" %}</p>');
+        }
+
+    });
+    
+   $(document).bind("add_error.basket", function(e, error){
+        alert('{% trans "Error occured when delete from basket:\n" %}' + error);
+        //window.location.reload();
+    });
+
+   // {% endif %}
 });
 //-->
 </script>
 {% if formset.forms %}
+<div id="basket_page_forms">
     <form action="." method="post">
 	    <table class="checkout">
 	        <tr>
@@ -24,8 +91,13 @@ $(document).ready(function() {
 	            <th>{% trans 'Total' %}</th>
 	        </tr>
 	        {% for form in formset.forms %}
-			<tr>
-	            <td>{{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
+			<tr class="dynamic-form">
+	            <td>
+                {% if delete %}
+                <a class="delete" href="#" onclick="return basket.del(this, {{ form.instance.content_type.id }}, {{ form.instance.content_object.id }});" title="{% trans 'Remove' %}"></a>
+                {% endif %}
+                
+                {{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
 	            <td><a target="_blank" href="{{ form.instance.content_object.get_absolute_url }}" title="{% trans 'Go to item page' %}">{{ form.instance.content_object }}</a></td>
 				<td>{{ form.instance.get_price }}</td>
 				<td>{{ form.quantity }}{{ form.quantity.errors }}</td>
@@ -55,6 +127,6 @@ $(document).ready(function() {
 {% else %}
 	<p>{% trans 'Your basket is empty' %}</p>
 {% endif %}
-
+</div>
 
 {% endblock content %}

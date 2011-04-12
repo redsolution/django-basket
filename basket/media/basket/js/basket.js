@@ -29,6 +29,39 @@ basket.add = function(el, content_type_id, object_id){
 	return false;
 };
 
+basket.del = function(el, content_type_id, object_id) {
+	var event = jQuery.Event("before_del.basket");
+	event.el= el;
+	this.do_delete = true;
+	$(document).trigger(event);
+	
+	if (this.do_delete) {
+		$.ajax({
+			'type': 'POST',
+			'url': basket.del_url,
+			'data': {
+				'content_type': content_type_id,
+				'object_id': object_id
+			},
+			'dataType': 'text',
+			'success': function(data, textStatus) {
+				var event = jQuery.Event("del_success.basket");
+				event.el = el;
+				event.status = textStatus;
+				$(document).trigger(event, data);
+			},
+			'error': function(XMLHttpRequest, textStatus, errorThrown) {
+				var event = jQuery.Event("del_error.basket");
+				event.el = el;
+				event.request = XMLHttpRequest;
+				event.status = textStatus;
+				$(document).trigger(event, errorThrown);
+			}}
+		);
+	}
+	return false;
+}
+
 $('html').ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;

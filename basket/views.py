@@ -2,6 +2,8 @@
 from basket.forms import OrderFormset
 from basket.models import Order
 from basket.utils import render_to, get_order_form, send_mail
+from basket.signals import order_submit
+from basket.settings import BASKET_OPTIONS_USE_KEEP, BASKET_OPTIONS_USE_DELETE
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,7 +11,6 @@ from django.core.urlresolvers import reverse
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponseBadRequest, HttpResponseRedirect, Http404
 from django.template import loader
-from basket.signals import order_submit
 
 
 @render_to('basket/basket.html')
@@ -36,6 +37,8 @@ def basket(request):
         'order_form': get_order_form()(request),
         'formset': formset,
         'order': order,
+        'keep': BASKET_OPTIONS_USE_KEEP,
+        'delete': BASKET_OPTIONS_USE_DELETE,
     }
 
 @render_to('basket/confirm.html')
@@ -53,7 +56,12 @@ def confirm(request):
             return HttpResponseRedirect(reverse('basket-thankyou'))
     else:
         form = get_order_form()(request)
-    return {'form': form, 'order': order}
+    return {
+        'form': form,
+        'order': order,
+        'keep': BASKET_OPTIONS_USE_KEEP,
+        'delete': BASKET_OPTIONS_USE_DELETE,
+    }
 
 
 def thankyou(request):
