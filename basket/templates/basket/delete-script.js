@@ -44,7 +44,6 @@ function updateElementIndex(el, prefix, ndx) {
         $(e.el).parents('.dynamic-form').remove();
 
         // If basket is empty, reload page 
-        console.log(forms.length);
         if (forms.length===1) {
             $('#basket_page_forms').html('<p>{% trans "Your basket is empty" %}</p>');
         }
