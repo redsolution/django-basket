@@ -2,14 +2,12 @@
 django-basket
 =============
 
-Generic basket
-
-Installation:
+Installation
 =============
 
-1. Put ``basket`` to ``INSTALLED_APPS`` in your ``settings.py`` within your django project.
+1. Add ``basket`` to ``INSTALLED_APPS``
 
-2. Add ``basket.middleware.BasketMiddleware`` to ``MIDDLEWARE_CLASSES`` in your ``settings.py``.
+2. Add ``basket.middleware.BasketMiddleware`` to ``MIDDLEWARE_CLASSES``
 
 3. Add basket to ``urlpatterns`` in your ``urls.py``::
 
@@ -19,67 +17,66 @@ Installation:
 
     ./manage.py syncdb
 
-5. Copy or symlink ``media/basket`` to your ``media`` folder.
+5. Do not foget to copy or symlink ``media/basket`` to your ``media`` folder.
 
-Usage:
+Usage
 ======
 
-In template:
-------------
-
-First of all, load the seo_tags in every template you want to use basket::
+Load basket tags: ::
 
     {% load basket_tags %}
     
-Add panel with summary information to each template::
+Add panel with summary information to template (probably, you want
+to include this panel in every page)::
 
-    {% show_basket_panel %}
+    {% include 'basket/panel.html' %}
+
+In order to basket javascript works, you have to add jQuery and basket.js
+to all pages with order buttons::
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/media/basket/js/basket.js"></script>
+
+Finally, at the item page ::
+
+    {% add_basket_button object %}
+
+Where ``object`` is avaiable to order.
+
+
+.. _available-settings:
+
+Available settings
+==================
+
+**PRICE_ATTR**
+
+    Default: ``price``
     
-Add buttons for each item to make them addable to the basket::
+    All objects in basket should have this attribute for price calculations.
+    Otherwise price will be 0.0
 
-    {% add_basket_button <object> %}
+**BASKET_FORM**
 
-Import ``media/basket/js/jquery-1.4.2.min.js`` from all tempalates where you are use basket::
+    Default: `basket.forms.DefaultOrderForm`
+    
+    This form class used for order confirmation. By default it has required fields: 
+    customer name, customer phone, delivery address, convenient time to call
+    and optional textarea for comment.
+    All information stored in order comment in admin interface.
 
-    <script type="text/javascript" src="/media/basket/js/jquery-1.4.2.min.js"></script>
+**BASKET_OPTIONS_USE_KEEP**
 
-Also, please check for import ``jquery.js`` from ``basket/basket.html``.
+    Default: True
+    
+    If set to True, user will see checkboxes near all items at basket page.
+    If checkbox is unchecked, item will be deleted from basket.
 
-Custom:
--------
 
-You can specify custom models and forms to store order information.
-For more information check settings in ``basket/settings.py``.
-
-Example:
-========
-
-``settings.py``::
-    INSTALLED_APPS = (
-        ...
-        'basket',
-    )
-
-    MIDDLEWARE_CLASSES = [
-        ...
-        'basket.middleware.BasketMiddleware',
-    )
-
-``urls.py``:
-    urlpatterns += patterns('',
-        (r'^basket/', include('basket.urls')),
-    )
-
-``templates/list.html``::
-    {% load basket_tags %}
-    <html>
-        <head>
-            <script type="text/javascript" src="/media/basket/js/jquery-1.4.2.min.js"></script>
-        </head>
-        <body>
-            <div id="head">{% show_basket_panel %}</div>
-            {% for object in objects %}
-                <div>{{ object.name }}{% add_basket_button object %}
-            {% endfor %}
-        </body>
-    </html>
+**BASKET_OPTIONS_USE_DELETE**
+    
+    Default: False
+    
+    If set to True, user will see delete icons near all items at basket page.
+    When user click on icon, item will be deleted from basket by AJAX request
+    and basket page will be automatically updated.
