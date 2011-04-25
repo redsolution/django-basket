@@ -211,17 +211,18 @@ def send_email(sender, **kwargs):
 def change_status(sender, **kwargs):
     order = kwargs['order']
     form_data = kwargs['data']
-
-    comment = ugettext('Automatically created status')
+    order.comment = ugettext('Automatically created status')
     order.status = STATUS_NEW
+    order.save()
+
+def autocomment(sender, **kwargs):
     order.comment = '\n'.join((
         '%s' % order.comment,
         comment_order(order, form_data),
         ugettext('New order'),
     ))
-
-
     order.save()
 
 order_submit.connect(send_email, sender=Order)
 order_submit.connect(change_status, sender=Order)
+order_submit.connect(autocomment, sender=Order)
