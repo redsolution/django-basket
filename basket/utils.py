@@ -7,10 +7,10 @@ from basket.settings import BASKET_FORM
 
 def send_mail(subject, message, recipient_list):
     from_email = settings.DEFAULT_FROM_EMAIL
-    if type(recipent_list) is not list:
-        recipent_list = [recipent_list, ]
+    if type(recipient_list) is not list:
+        recipient_list = [recipient_list, ]
     try:
-        django.core.mail.send_mail(subject, message, from_email, recipent_list)
+        django.core.mail.send_mail(subject, message, from_email, recipient_list)
     except Exception, e:
         print 'Error while sending mail: ', e
 

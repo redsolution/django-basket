@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from basket.settings import PRICE_ATTR
 from basket.signals import order_submit
-from basket.utils import get_order_form, send_email
+from basket.utils import get_order_form, send_mail
 from datetime import datetime
 from decimal import Decimal
 from django.conf import settings
@@ -211,7 +211,7 @@ def email_to_managers(sender, **kwargs):
     order = kwargs['order']
     form_data = kwargs['data']
     message = comment_order(order, form_data)
-    send_email(subject, message, recipient_list)
+    send_mail(subject, message, managers)
 
 def change_status(sender, **kwargs):
     order = kwargs['order']
@@ -220,6 +220,7 @@ def change_status(sender, **kwargs):
     order.save()
 
 def autocomment(sender, **kwargs):
+    order = kwargs['order']
     form_data = kwargs['data']
     order.comment = '\n'.join((
         '%s' % order.comment,
