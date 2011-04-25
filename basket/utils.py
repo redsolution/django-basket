@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from basket.settings import BASKET_FORM
 
-def send_mail(subject, message, recipent_list):
+def send_mail(subject, message, recipient_list):
     from_email = settings.DEFAULT_FROM_EMAIL
     if type(recipent_list) is not list:
         recipent_list = [recipent_list, ]

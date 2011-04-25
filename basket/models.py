@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from basket.settings import PRICE_ATTR
 from basket.signals import order_submit
-from basket.utils import get_order_form
+from basket.utils import get_order_form, send_email
 from datetime import datetime
 from decimal import Decimal
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -202,20 +203,24 @@ def comment_order(order, form_data):
     })
     return message
 
-def send_email(sender, **kwargs):
+def email_to_managers(sender, **kwargs):
     '''Send email when order issued'''
+    managers = [manager[1] for manager in settings.MANAGERS]
+    subject = _('New order from site')
+
     order = kwargs['order']
-    print 'Alarm! New order!'
-    print order
+    form_data = kwargs['data']
+    message = comment_order(order, form_data)
+    send_email(subject, message, recipient_list)
 
 def change_status(sender, **kwargs):
     order = kwargs['order']
-    form_data = kwargs['data']
     order.comment = ugettext('Automatically created status')
     order.status = STATUS_NEW
     order.save()
 
 def autocomment(sender, **kwargs):
+    form_data = kwargs['data']
     order.comment = '\n'.join((
         '%s' % order.comment,
         comment_order(order, form_data),
@@ -223,6 +228,6 @@ def autocomment(sender, **kwargs):
     ))
     order.save()
 
-order_submit.connect(send_email, sender=Order)
+order_submit.connect(email_to_managers, sender=Order)
 order_submit.connect(change_status, sender=Order)
 order_submit.connect(autocomment, sender=Order)
