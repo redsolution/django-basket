@@ -39,7 +39,7 @@ class OrderAdmin(admin.ModelAdmin):
         return super(OrderAdmin, self).save_formset(request, form, formset, change)
 
 try:
-    admin.site.register(Order, OrderAdmin)
+    admin.site.register(Order)
 except admin.sites.AlreadyRegistered:
     pass
 
