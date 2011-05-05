@@ -17,8 +17,9 @@ def comment_order(order):
         cleaned_data = simplejson.loads(order.form_data)
         result = {}
         for field_name, value in cleaned_data.iteritems():
+            field = OrderForm.base_fields.get(field_name)
             result.update({
-                field_name: (value, OrderForm.base_fields[field_name].label),
+                field_name: (value, getattr(field, 'label', None)),
             })
 
         message = loader.render_to_string('basket/order_for_migration.txt', {
