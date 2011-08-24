@@ -2,7 +2,7 @@
 {% for basketitem in order.items.all %}{{ forloop.counter }}. {{ basketitem.content_object }}: {{ basketitem.get_price }} руб. * {{ basketitem.quantity }} шт. = {{ basketitem.get_sum }} руб.
 {% endfor %}
 
-Итого {{ order.goods }} товаров на сумму {{ order.summary }} руб.
+Итого {{ order.total.count }} товаров на сумму {{ order.total.price }} руб.
 
 ===Данные заказа #{{ order.id|stringformat:"06d" }}===
 {% for key, value in form_data.iteritems %}

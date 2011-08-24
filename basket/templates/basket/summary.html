@@ -2,13 +2,13 @@
 
 {% if request.order and not request.order.empty %}
     <p>
-    {% blocktrans with request.order.goods as items and request.order.summary as price  %}
+    {% blocktrans with request.order.total.count as items and request.order.total.price as price  %}
     {{ items }} items in basket. Total cost {{ price }}
     {% endblocktrans %}
     {# use for russian translation #}
     {% comment %}
     {% load pytils_numeral %}
-    {{ request.order.goods|choose_plural:"item1, items2, items5" }}
+    {{ request.order.total.count|choose_plural:"item1, items2, items5" }}
     {% endcomment %}
     </p>
     <a href="{% url basket %}" title="{% trans 'Submit order' %}">{% trans 'Go to basket page' %}</a></p>

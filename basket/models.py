@@ -8,6 +8,8 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
+import warnings
+
 
 STATUS_PENDING = 0
 STATUS_NEW = 1
@@ -115,7 +117,7 @@ class Order(models.Model):
         for basket_item in self.items.all():
             basket_item.delete()
 
-    def calculate(self):
+    def total(self):
         total_goods = 0
         total_price = Decimal('0.0')
         for basket_item in self.items.all():
@@ -124,14 +126,22 @@ class Order(models.Model):
             except AttributeError:
                 pass
             total_goods += basket_item.quantity
-        return {'goods': total_goods, 'summary': total_price}
+        return {'count': total_goods, 'price': total_price}
 
     def goods(self):
-        return self.calculate()['goods']
+        warnings.warn(
+            "Use order.total['count'] instead of order.goods()",
+            DeprecationWarning
+        )
+        return self.total()['count']
     goods.short_description = _('Total items in basket')
 
     def summary(self):
-        return self.calculate()['summary']
+        warnings.warn(
+            "Use order.total['price'] instead of order.summary()",
+            DeprecationWarning
+        )
+        return self.total()['price']
     summary.short_description = _('Total price')
 
     def get_status(self):

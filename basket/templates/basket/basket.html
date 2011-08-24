@@ -50,8 +50,8 @@ $(document).ready(function() {
 	        {% endfor %}
 	        <tr>
 	            <th colspan="3">{% trans 'Total' %}</th>
-	            <th>{{ order.goods }}</th>
-	            <th>{{ order.summary }}</th>
+	            <th>{{ order.total.count }}</th>
+	            <th>{{ order.total.price }}</th>
 	        </tr>
 	    </table>
         <p>
