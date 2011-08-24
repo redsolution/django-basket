@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
 from basket.settings import PRICE_ATTR
-from basket.signals import order_submit
-from basket.utils import get_order_form, send_mail
+from basket.utils import query_set_factory
 from datetime import datetime
 from decimal import Decimal
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sessions.models import Session
-from django.db.models import Count
 from django.db import models
-from django.template import loader
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 STATUS_PENDING = 0
 STATUS_NEW = 1
@@ -29,19 +23,6 @@ STATUS_CHIOCES = (
     (STATUS_ERROR, _('Closed with error')),
 )
 
-def query_set_factory(model_name, query_set_class):
-    class ChainedManager(models.Manager):
-
-        def get_query_set(self):
-            model = models.get_model('basket', model_name)
-            return query_set_class(model)
-
-        def __getattr__(self, attr, *args):
-            try:
-                return getattr(self.__class__, attr, *args)
-            except AttributeError:
-                return getattr(self.get_query_set(), attr, *args)
-    return ChainedManager()
 
 class OrderQuerySet(models.query.QuerySet):
 
@@ -63,7 +44,7 @@ class Order(models.Model):
     created = models.DateTimeField(verbose_name=_('Created date'))
     comment = models.TextField(verbose_name=_('Comment'), blank=True, null=True)
 
-    objects = query_set_factory('Order', OrderQuerySet)
+    objects = query_set_factory('basket.Order', OrderQuerySet)
 
     def registered(self):
         '''
@@ -187,48 +168,3 @@ class BasketItem(models.Model):
 
     def get_sum(self):
         return self.get_price() * self.quantity
-
-
-def comment_order(order, form_data):
-    OrderForm = get_order_form()
-    result = {}
-    for field_name, value in form_data.iteritems():
-        result.update({
-            field_name: (value, OrderForm.base_fields[field_name].label),
-        })
-
-    message = loader.render_to_string('basket/order.txt', {
-        'order': order,
-        'form_data': result,
-    })
-    return message
-
-def email_to_managers(sender, **kwargs):
-    '''Send email when order issued'''
-    managers = [manager[1] for manager in settings.MANAGERS]
-    subject = _('New order from site')
-
-    order = kwargs['order']
-    form_data = kwargs['data']
-    message = comment_order(order, form_data)
-    send_mail(subject, message, managers)
-
-def change_status(sender, **kwargs):
-    order = kwargs['order']
-    order.comment = ugettext('Automatically created status')
-    order.status = STATUS_NEW
-    order.save()
-
-def autocomment(sender, **kwargs):
-    order = kwargs['order']
-    form_data = kwargs['data']
-    order.comment = '\n'.join((
-        '%s' % order.comment,
-        comment_order(order, form_data),
-        ugettext('New order'),
-    ))
-    order.save()
-
-order_submit.connect(email_to_managers, sender=Order)
-order_submit.connect(change_status, sender=Order)
-order_submit.connect(autocomment, sender=Order)
