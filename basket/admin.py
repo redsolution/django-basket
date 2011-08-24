@@ -14,7 +14,7 @@ class OrderAdmin(admin.ModelAdmin):
     model = Order
     form = CommentForm
     exclude = ['user', 'session_key', ]
-    list_display = ['__unicode__', 'goods', 'summary', 'status', 'registered', 'user']
+    list_display = ['__unicode__', 'total_admin', 'status', 'registered', 'user']
     list_filter = ['status']
     fieldsets = (
         (_('Order data'), {
@@ -24,6 +24,10 @@ class OrderAdmin(admin.ModelAdmin):
     )
     search_fields = ('user__username',)
 
+    def total_admin(self, obj):
+        return _('items: <strong>%(count)s</strong>, price: <strong>%(price)s</strong>' % obj.total())
+    total_admin.short_description = _('Quantity info')
+    total_admin.allow_tags = True
 
 try:
     admin.site.register(Order, OrderAdmin)

@@ -28,7 +28,7 @@ def comment_order(order, form_data):
 def email_to_managers(sender, **kwargs):
     '''Send email when order issued'''
     managers = [manager[1] for manager in settings.MANAGERS]
-    subject = _('New order from site')
+    subject = ugettext('New order from site')
 
     order = kwargs['order']
     form_data = kwargs['data']
@@ -37,7 +37,7 @@ def email_to_managers(sender, **kwargs):
 
 def change_status(sender, **kwargs):
     order = kwargs['order']
-    order.comment = _('Automatically created status')
+    order.comment = ugettext('Automatically created status')
     order.status = STATUS_NEW
     order.save()
 

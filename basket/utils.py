@@ -3,7 +3,7 @@ import django.core.mail
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django import models
+from django.db import models
 from basket.settings import BASKET_FORM
 
 def send_mail(subject, message, recipient_list):
@@ -64,7 +64,7 @@ def query_set_factory(model_name, query_set_class):
     class ChainedManager(models.Manager):
 
         def get_query_set(self):
-            model = models.get_model(model_name.split('.'))
+            model = models.get_model(*model_name.split('.'))
             return query_set_class(model)
 
         def __getattr__(self, attr, *args):
