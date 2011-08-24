@@ -72,7 +72,7 @@ class Order(models.Model):
         request.session['order_id'] = order.id
         return order
 
-    def add_item(self, item):
+    def add_item(self, item, qty=1):
         item_ct = ContentType.objects.get_for_model(item)
         already_in_order = bool(
             self.items.filter(object_id=item.id, content_type=item_ct).count()
@@ -80,10 +80,10 @@ class Order(models.Model):
 
         if already_in_order:
             basket_item = self.items.get(object_id=item.id, content_type=item_ct)
-            basket_item.quantity += 1
+            basket_item.quantity += qty
             basket_item.save()
         else:
-            basket_item = BasketItem(content_object=item, quantity=1, order=self)
+            basket_item = BasketItem(content_object=item, quantity=qty, order=self)
             basket_item.save()
             self.items.add(basket_item)
             self.save()
