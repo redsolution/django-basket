@@ -1,22 +1,62 @@
+# -*- coding: utf-8 -*-
+from classytags.arguments import Argument, ChoiceArgument
+from classytags.core import Tag, Options
 from django import template
 from django.contrib.contenttypes.models import ContentType
+from django.template.loader import render_to_string
+
 
 register = template.Library()
 
-@register.inclusion_tag('basket/button.html')
-def add_basket_button(object):
-    """
-    Add button to add specified object to the basket.
-    """
-    if object is None:
-        return {'content_type': None, 'object': None, }
-    content_type = ContentType.objects.get_for_model(object)
-    return {'content_type': content_type, 'object': object, }
+BUTTON_TYPE_SIMPLE = 'simple'
+BUTTON_TYPE_AJAX = 'ajax'
+BUTTON_TYPE_COUNTER = 'counter'
+BUTTON_CHOICES = [BUTTON_TYPE_SIMPLE, BUTTON_TYPE_AJAX, BUTTON_TYPE_COUNTER]
 
-@register.filter
-def content_type(object):
+class AddButton(Tag):
     '''
-    returns content type id for object
+    Render add-to-basket button for generic object.
+    
+    **Usage**::
+    
+         {% add_basket_button object [type button_type] %}
+    
+    
+    ``object`` - Django model instance, which you want to sell.
+    ``button_type`` - type of button. Three types available now:
+    
+        - simple - after click user will be redirected to basket page (default argument),
+        - ajax - adding to basket will not cause page reload,
+        - counter - works the same as 'simple', but with quantity counter near submit button.
+    
+    **Examples**::
+    
+        {% add_basket_button item %}
+    
+    Displays ``simple`` button for item, which redirects to basket page.
+    
+        {% add_basket_button item type ajax %}
+    
+    Displays ajax button.
     '''
-    content_type = ContentType.objects.get_for_model(object)
-    return '%s' % content_type.id
+    name = 'add_basket_button'
+    options = Options(
+        Argument('instance'),
+        'type',
+        ChoiceArgument('button_type', resolve=False, required=False,
+            default=BUTTON_TYPE_SIMPLE, choices=BUTTON_CHOICES),
+    )
+    templates = {
+        BUTTON_TYPE_SIMPLE: 'basket/button/simple.html',
+        BUTTON_TYPE_AJAX: 'basket/button/ajax.html',
+        BUTTON_TYPE_COUNTER: 'basket/button/counter.html',
+    }
+
+    def render_tag(self, context, instance, button_type):
+        content_type = ContentType.objects.get_for_model(instance)
+        return render_to_string(self.templates[button_type], {
+            'instance': instance,
+            'content_type': content_type
+        })
+
+register.tag(AddButton)

@@ -1,9 +1,0 @@
-{% load i18n %}
-<div class="add-to-basket">
-	<div class="basket-button">
-		<a href="#" onclick="return basket.add(this, {{ content_type.id }}, {{ object.id }});">
-			{% trans 'Add to basket' %}
-		</a>
-	</div>
-	<div class="basket-added" style="display: none;">{% trans 'Added to basket' %}</div>
-</div>
