@@ -57,9 +57,9 @@ $(document).ready(function() {
         <p>
 		    {{ formset.management_form }}
 		    {% csrf_token %}
-            <button onclick="document.location = '/'; return false">{% trans 'Continue shopping' %}</button>
+            <input type="submit" name="continue" value="{% trans 'Continue shopping' %}" />
             <input type="submit" name="refresh" id="basket-refresh" value="{% trans 'Update items' %}" />
-            <input type="submit" value="{% trans 'Go to checkout' %}" />
+            <input type="submit" name="checkout" value="{% trans 'Go to checkout' %}" />
         </p>
 	</form>
 

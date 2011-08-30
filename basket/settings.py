@@ -8,3 +8,5 @@ BASKET_FORM = getattr(settings, 'BASKET_FORM', DEFAULT_BASKET_FORM)
 
 BASKET_OPTIONS_USE_KEEP = getattr(settings, 'BASKET_OPTIONS_USE_KEEP', True)
 BASKET_OPTIONS_USE_DELETE = getattr(settings, 'BASKET_OPTIONS_USE_DELETE', False)
+
+REFERER_COOKIE_NAME = 'basket_referer'

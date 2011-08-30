@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from basket.models import Order
-from basket.settings import BASKET_OPTIONS_USE_DELETE
+from basket.settings import BASKET_OPTIONS_USE_DELETE, REFERER_COOKIE_NAME
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -41,7 +41,10 @@ class BasketMiddleware(object):
                 request.order = None
 
     def process_response(self, request, response):
-        '''Add basket url to script'''
+        '''
+        1. Adds basket url to script
+        2. Sets referer cookie for "continue shopping" functionality
+        '''
         urls = {
             'add': reverse('add_to_basket'),
         }
@@ -49,6 +52,14 @@ class BasketMiddleware(object):
             urls['del'] = reverse('del_from_basket')
         else:
             urls['del'] = ''
+        # Set referer cookie
+        try:
+            if 'referer' in request.session:
+                response.set_cookie(REFERER_COOKIE_NAME, value=request.session['referer'])
+                del request.session['referer']
+        except:
+            pass
+        # Add basket javascript
         try:
             def add_url_definition(match):
                 return mark_safe(match.group() + BASKET_URL_SCRIPT % urls)

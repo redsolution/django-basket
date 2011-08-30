@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from basket.forms import OrderFormset, AddItemForm
 from basket.models import Order
-from basket.settings import BASKET_OPTIONS_USE_KEEP, BASKET_OPTIONS_USE_DELETE
+from basket.settings import BASKET_OPTIONS_USE_KEEP, BASKET_OPTIONS_USE_DELETE, REFERER_COOKIE_NAME
 from basket.signals import order_submit
 from basket.utils import render_to, get_order_form, send_mail
 from django.conf import settings
@@ -22,17 +22,23 @@ def basket(request):
     if order is None or order.total['count'] == 0:
         return HttpResponseRedirect(reverse('basket-empty'))
 
-
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
 
         if formset.is_valid():
             formset.save()
 
-            if 'refresh' in request.POST:
-                return HttpResponseRedirect(reverse('basket'))
-            else:
+            print 'form valid, POST:', request.POST
+
+            if 'continue' in request.POST:
+                if REFERER_COOKIE_NAME in request.COOKIES:
+                    return HttpResponseRedirect(request.COOKIES[REFERER_COOKIE_NAME])
+                else:
+                    return HttpResponseRedirect('/')
+            elif 'checkout' in request.POST:
                 return HttpResponseRedirect(reverse('order_confirm'))
+            else:
+                return HttpResponseRedirect(reverse('basket'))
     else:
         formset = OrderFormset(instance=order)
 
@@ -78,6 +84,10 @@ def add_to_basket(request):
         request.order = order
     else:
         order = request.order
+
+    # Save last page user visited in cookie
+    referer = request.META['HTTP_REFERER'].replace(request.META['HTTP_ORIGIN'], '')
+    request.session['referer'] = referer
 
     if request.method == 'POST':
         form = AddItemForm(order, request.POST)
