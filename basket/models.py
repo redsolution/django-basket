@@ -189,7 +189,7 @@ class Order(models.Model):
             "Use order.total['count'] instead of order.goods()",
             DeprecationWarning
         )
-        return self.total()['count']
+        return self.total['count']
     goods.short_description = _('Total items in basket')
 
     def summary(self):
@@ -200,7 +200,7 @@ class Order(models.Model):
             "Use order.total['price'] instead of order.summary()",
             DeprecationWarning
         )
-        return self.total()['price']
+        return self.total['price']
     summary.short_description = _('Total price')
 
     def get_status(self):

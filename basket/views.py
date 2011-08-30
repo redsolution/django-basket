@@ -51,7 +51,7 @@ def confirm(request):
     # do not create order automatically
     order = request.order
 
-    if order is None or order.empty():
+    if order is None or order.empty:
         return HttpResponseRedirect(reverse('basket-empty'))
 
     if request.method == 'POST':

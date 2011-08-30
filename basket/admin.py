@@ -25,7 +25,7 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ('user__username',)
 
     def total_admin(self, obj):
-        return _('items: <strong>%(count)s</strong>, price: <strong>%(price)s</strong>' % obj.total())
+        return _('items: <strong>%(count)s</strong>, price: <strong>%(price)s</strong>' % obj.total)
     total_admin.short_description = _('Quantity info')
     total_admin.allow_tags = True
 
