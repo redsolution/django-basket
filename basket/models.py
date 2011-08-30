@@ -116,10 +116,10 @@ class Order(models.Model):
 
 
     def remove_item(self, item, item_ct=None):
-        '''
-        Alias for ``set_quantity``. Specifies ``quantity`` = 0
-        '''
-        self.set_quantity(item, 0, item_ct)
+        if item_ct is None:
+            item_ct = ContentType.objects.get_for_model(item)
+
+        self.items.filter(object_id=item.id, content_type=item_ct).delete()
 
     def set_quantity(self, item, quantity, item_ct=None):
         '''
