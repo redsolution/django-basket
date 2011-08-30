@@ -99,13 +99,16 @@ def delete_from_basket(request):
     if order is None:
         raise Http404(_('Basket does not exist'))
 
-    content_type_id = request.REQUEST.get('content_type', None)
-    object_id = request.REQUEST.get('object_id', None)
-    try:
-        content_type = ContentType.objects.get(id=content_type_id)
-        item = content_type.get_object_for_this_type(id=object_id)
-    except ObjectDoesNotExist:
-        raise Http404
+    if request.method == 'POST':
+        request.POST.update({'quantity': 0})
+        form = AddItemForm(order, request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            return HttpResponseBadRequest(form.errors)
 
-    order.remove_item(item)
-    return {'order': order}
+    if request.is_ajax():
+        return render_to_response('basket/summary.html', {})
+    else:
+        return HttpResponseRedirect(reverse('basket'))
+
