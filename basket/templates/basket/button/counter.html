@@ -1,5 +1,5 @@
 {% load i18n %}
-<form action="#">
-<p>(Counter)</p>
-<button onclick="return basket.submit(this, {{ content_type.id }}), {{ instance.id }}" >{% trans 'Add to basket' %}</button>
+<form action="{% url add_to_basket %}" method="POST">
+{{ form }}
+<input type="submit" value="{% trans 'Add to basket' %}"/>
 </form>

@@ -40,11 +40,10 @@ $(document).ready(function() {
                 {% if delete %}
                 <a class="delete" href="#" onclick="return basket.del(this, {{ form.instance.content_type.id }}, {{ form.instance.content_object.id }});" title="{% trans 'Remove' %}"></a>
                 {% endif %}
-                
                 {{ form.keep }}{{ form.content_type }}{{ form.object_id }}{{ form.id }}</td>
 	            <td><a target="_blank" href="{{ form.instance.content_object.get_absolute_url }}" title="{% trans 'Go to item page' %}">{{ form.instance.content_object }}</a></td>
 				<td>{{ form.instance.get_price }}</td>
-				<td>{{ form.quantity }}{{ form.quantity.errors }}</td>
+				<td>{{ form.quantity.errors }}{{ form.quantity }}</td>
 				<td>{{ form.instance.get_sum }}</td>
 			</tr>
 	        {% endfor %}

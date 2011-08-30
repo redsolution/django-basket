@@ -1,10 +1,11 @@
-import os
-import django.core.mail
+from basket.settings import BASKET_FORM
 from django.conf import settings
+from django.db import models
+from django.forms.widgets import Input
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.db import models
-from basket.settings import BASKET_FORM
+import django.core.mail
+import os
 
 def send_mail(subject, message, recipient_list):
     """
@@ -73,3 +74,7 @@ def query_set_factory(model_name, query_set_class):
             except AttributeError:
                 return getattr(self.get_query_set(), attr, *args)
     return ChainedManager()
+
+
+class NumberInput(Input):
+    input_type = 'number'

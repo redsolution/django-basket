@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from basket.models import Order, BasketItem
 from basket.settings import BASKET_OPTIONS_USE_KEEP
+from basket.utils import NumberInput
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,6 +18,7 @@ class BasketItemForm(forms.ModelForm):
 
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all(),
         widget=forms.HiddenInput)
+    quantity = forms.IntegerField(label=_('Quantity'), widget=NumberInput)
     object_id = forms.IntegerField(widget=forms.HiddenInput)
     if BASKET_OPTIONS_USE_KEEP:
         keep = forms.BooleanField(initial=True, required=False)
@@ -74,6 +76,10 @@ class AddItemForm(forms.Form):
         return self.order.add_item(item, quantity=self.cleaned_data['quantity'],
             item_ct=content_type)
 
+
+class AddCountedItemForm(AddItemForm):
+        quantity = forms.IntegerField(label='Quantity', widget=NumberInput(),
+            initial=1)
 
 class DefaultOrderForm(forms.Form):
     name = forms.CharField(label=_('Customer name'), max_length=100)

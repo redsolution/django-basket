@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+from basket.forms import AddItemForm, AddCountedItemForm
 from classytags.arguments import Argument, ChoiceArgument
 from classytags.core import Tag, Options
 from django import template
 from django.contrib.contenttypes.models import ContentType
 from django.template.loader import render_to_string
-from basket.forms import AddItemForm
 
 register = template.Library()
 
@@ -35,7 +35,7 @@ class AddButton(Tag):
     
     Displays ``simple`` button for item, which redirects to basket page.
     
-        {% add_basket_button item type ajax %}
+        {% add_basket_button item type 'ajax' %}
     
     Displays ajax button.
     '''
@@ -53,8 +53,9 @@ class AddButton(Tag):
     }
 
     def render_tag(self, context, instance, button_type):
+        FormClass = AddCountedItemForm if button_type == BUTTON_TYPE_COUNTER else AddItemForm
         return render_to_string(self.templates[button_type], {
-            'form': AddItemForm.for_object(instance),
+            'form': FormClass.for_object(instance),
         })
 
 register.tag(AddButton)
