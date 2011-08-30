@@ -68,7 +68,7 @@ class AddItemForm(forms.Form):
         '''
         content_type = ContentType.objects.get_for_model(instance)
         initial = {
-            'content_type': content_type.id,
+            'content_type': content_type,
             'object_id': instance.id,
             'quantity': cls.base_fields['quantity'].initial,
         }
@@ -76,10 +76,11 @@ class AddItemForm(forms.Form):
 
     def save(self):
         try:
-            content_type = ContentType.objects.get(id=self.cleaned_data['content_type'])
+            content_type = ContentType.objects.get(id=self.cleaned_data['content_type'].id)
             item = content_type.get_object_for_this_type(id=self.cleaned_data['object_id'])
         except ObjectDoesNotExist:
             return 0
-        return self.order.add_item(item, self.cleaned_data['quantity'])
+        return self.order.add_item(item, quantity=self.cleaned_data['quantity'],
+            item_ct=content_type)
 
 

@@ -61,6 +61,18 @@ class Order(models.Model):
 
     @classmethod
     def from_request(cls, request):
+        '''
+        Utility for creating orders from HttpRequest instances.
+        Takes into account authorized users and anonymous.
+        Example: ::
+        
+            def add_to_basket(request):
+                # Automatically create order if it does not exist
+                if request.order is None:
+                    order = Order.from_request(request)
+                    request.order = order
+                    ...
+        '''
         order = cls()
         if request.user.is_authenticated():
             order.user = request.user
@@ -72,32 +84,33 @@ class Order(models.Model):
         request.session['order_id'] = order.id
         return order
 
-    def add_item(self, item, item_ct=None, qty=1):
-        # if we already calculated ContentType, for speed 
+    def add_item(self, item, quantity=1, item_ct=None):
+        '''
+        Alias for ``set_quantity`` with one difference:
+        ``quantity`` argument has default value 1. 
+        '''
+        self.set_quantity(item, quantity, item_ct=None)
+
+    def remove_item(self, item, item_ct=None):
+        '''
+        Alias for ``set_quantity``. Specifies ``quantity`` = 0
+        '''
+        self.set_quantity(item, 0, item_ct)
+
+    def set_quantity(self, item, quantity, item_ct=None):
+        '''
+        Puts item in a basket.
+        Arguments: 
+        
+        - ``item`` - any Django model instance
+        - ``qty`` - quantity of item. If 0 specified, deletes this item
+            (if there were any before adding) from basket.
+        - ``item_ct`` - precalculated ContentType for item. If not specified, 
+            it will automatically calculated
+        '''
         if item_ct is None:
             item_ct = ContentType.objects.get_for_model(item)
-        already_in_order = bool(
-            self.items.filter(object_id=item.id, content_type=item_ct).count()
-        )
 
-        if already_in_order:
-            basket_item = self.items.get(object_id=item.id, content_type=item_ct)
-            basket_item.quantity += qty
-            basket_item.save()
-            return qty
-        else:
-            basket_item = BasketItem(content_object=item, quantity=qty, order=self)
-            basket_item.save()
-            self.items.add(basket_item)
-            self.save()
-            return qty
-
-    def remove_item(self, item):
-        item_ct = ContentType.objects.get_for_model(item)
-        self.items.filter(object_id=item.id, content_type=item_ct).delete()
-
-    def set_quantity(self, item, quantity):
-        item_ct = ContentType.objects.get_for_model(item)
         already_in_order = bool(
             self.items.filter(object_id=item.id, content_type=item_ct).count()
         )
@@ -118,11 +131,22 @@ class Order(models.Model):
             self.save()
 
     def flush(self):
+        '''
+        Deletes all items from order.
+        '''
         for basket_item in self.items.all():
             basket_item.delete()
 
     @property
     def total(self):
+        '''
+        Total property returns dictoinary with total item count in order and 
+        total price. For example:::
+            
+            >>> order.total
+            {'count': 10, 'price': Decimal('110.1')}
+        
+        '''
         total_goods = 0
         total_price = Decimal('0.0')
         for basket_item in self.items.all():
@@ -134,6 +158,9 @@ class Order(models.Model):
         return {'count': total_goods, 'price': total_price}
 
     def goods(self):
+        '''
+        Deprecated. Use ``order.total['count']`` instead of ``order.goods()``
+        '''
         warnings.warn(
             "Use order.total['count'] instead of order.goods()",
             DeprecationWarning
@@ -142,6 +169,9 @@ class Order(models.Model):
     goods.short_description = _('Total items in basket')
 
     def summary(self):
+        '''
+        Deprecated. Use ``order.total['price']`` instead of ``order.summary()``
+        '''
         warnings.warn(
             "Use order.total['price'] instead of order.summary()",
             DeprecationWarning
@@ -150,9 +180,13 @@ class Order(models.Model):
     summary.short_description = _('Total price')
 
     def get_status(self):
+        '''
+        Returns latest changed order status. Used in admin interface.
+        '''
         return self.status_set.latest('modified')
     get_status.short_description = _('Order status')
 
+    @property
     def empty(self):
         return self.goods() == 0
 
@@ -173,6 +207,22 @@ class BasketItem(models.Model):
     quantity = models.IntegerField(verbose_name=_('Quantity'))
 
     def get_price(self):
+        '''
+        Returns price accordind to PRICE_ATTR setting.
+        The order of retrieving price value:
+        1. Lambda-method lookup:::
+        
+            value = PRICE_ATTR(self.content_object)
+        
+        2. Attribute lookup::
+        
+            value = getattr(self.content_object, PRICE_ATTR)
+        
+        Callable result supported:::
+            
+            >> value = PRICE_ATTR(self.content_object)  # apply lambda-method for object
+            >> value = value()  # execute result again
+        '''
         if callable(PRICE_ATTR):
             value = PRICE_ATTR(self.content_object)
         else:
