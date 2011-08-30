@@ -9,6 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class BasketItemForm(forms.ModelForm):
+    '''
+    Form on basket page. Updates items quantity or deletes them.
+    '''
     class Meta:
         model = BasketItem
 
@@ -28,18 +31,6 @@ class BasketItemForm(forms.ModelForm):
 OrderFormset = inlineformset_factory(Order, BasketItem, extra=0,
     can_delete=False, form=BasketItemForm)
 
-
-class DefaultOrderForm(forms.Form):
-    name = forms.CharField(label=_('Customer name'), max_length=100)
-    phone = forms.CharField(label=_('Customer phone'), max_length=100)
-    address = forms.CharField(label=_('Delivery address'), max_length=255)
-    contact_time = forms.CharField(label=_('Convenient time to call'),
-        max_length=50, required=False)
-    comment = forms.CharField(label=_('Comment for us'), max_length=255,
-        widget=forms.Textarea(), required=False)
-
-    def __init__(self, request, *args, **kwds):
-        return super(DefaultOrderForm, self).__init__(*args, **kwds)
 
 class AddItemForm(forms.Form):
     '''
@@ -84,3 +75,14 @@ class AddItemForm(forms.Form):
             item_ct=content_type)
 
 
+class DefaultOrderForm(forms.Form):
+    name = forms.CharField(label=_('Customer name'), max_length=100)
+    phone = forms.CharField(label=_('Customer phone'), max_length=100)
+    address = forms.CharField(label=_('Delivery address'), max_length=255)
+    contact_time = forms.CharField(label=_('Convenient time to call'),
+        max_length=50, required=False)
+    comment = forms.CharField(label=_('Comment for us'), max_length=255,
+        widget=forms.Textarea(), required=False)
+
+    def __init__(self, request, *args, **kwds):
+        return super(DefaultOrderForm, self).__init__(*args, **kwds)
