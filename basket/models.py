@@ -86,10 +86,34 @@ class Order(models.Model):
 
     def add_item(self, item, quantity=1, item_ct=None):
         '''
-        Alias for ``set_quantity`` with one difference:
-        ``quantity`` argument has default value 1. 
+        Puts item in a basket.
+        Arguments: 
+        
+        - ``item`` - any Django model instance
+        - ``qty`` - quantity of added item. Default value is 1.
+        - ``item_ct`` - precalculated ContentType for item. If not specified, 
+            it will automatically calculated
         '''
-        self.set_quantity(item, quantity, item_ct=None)
+        if item_ct is None:
+            item_ct = ContentType.objects.get_for_model(item)
+
+        already_in_order = bool(
+            self.items.filter(object_id=item.id, content_type=item_ct).count()
+        )
+
+        if quantity <= 0:
+            return
+
+        if already_in_order:
+            basket_item = self.items.get(object_id=item.id, content_type=item_ct)
+            basket_item.quantity += quantity
+            basket_item.save()
+        else:
+            basket_item = BasketItem(content_object=item, quantity=quantity, order=self)
+            basket_item.save()
+            self.items.add(basket_item)
+            self.save()
+
 
     def remove_item(self, item, item_ct=None):
         '''
@@ -99,7 +123,7 @@ class Order(models.Model):
 
     def set_quantity(self, item, quantity, item_ct=None):
         '''
-        Puts item in a basket.
+        Sets item's quantity in a basket.
         Arguments: 
         
         - ``item`` - any Django model instance
