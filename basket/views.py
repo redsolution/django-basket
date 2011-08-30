@@ -28,8 +28,6 @@ def basket(request):
         if formset.is_valid():
             formset.save()
 
-            print 'form valid, POST:', request.POST
-
             if 'continue' in request.POST:
                 if REFERER_COOKIE_NAME in request.COOKIES:
                     return HttpResponseRedirect(request.COOKIES[REFERER_COOKIE_NAME])
