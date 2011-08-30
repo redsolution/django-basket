@@ -72,8 +72,10 @@ class Order(models.Model):
         request.session['order_id'] = order.id
         return order
 
-    def add_item(self, item, qty=1):
-        item_ct = ContentType.objects.get_for_model(item)
+    def add_item(self, item, item_ct=None, qty=1):
+        # if we already calculated ContentType, for speed 
+        if item_ct is None:
+            item_ct = ContentType.objects.get_for_model(item)
         already_in_order = bool(
             self.items.filter(object_id=item.id, content_type=item_ct).count()
         )
@@ -82,11 +84,13 @@ class Order(models.Model):
             basket_item = self.items.get(object_id=item.id, content_type=item_ct)
             basket_item.quantity += qty
             basket_item.save()
+            return qty
         else:
             basket_item = BasketItem(content_object=item, quantity=qty, order=self)
             basket_item.save()
             self.items.add(basket_item)
             self.save()
+            return qty
 
     def remove_item(self, item):
         item_ct = ContentType.objects.get_for_model(item)
@@ -117,6 +121,7 @@ class Order(models.Model):
         for basket_item in self.items.all():
             basket_item.delete()
 
+    @property
     def total(self):
         total_goods = 0
         total_price = Decimal('0.0')

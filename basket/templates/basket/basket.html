@@ -57,17 +57,12 @@ $(document).ready(function() {
         <p>
 		    {{ formset.management_form }}
 		    {% csrf_token %}
+            <button onclick="document.location = '/'; return false">{% trans 'Continue shopping' %}</button>
+            <input type="submit" name="refresh" id="basket-refresh" value="{% trans 'Update items' %}" />
             <input type="submit" value="{% trans 'Go to checkout' %}" />
-            <input type="submit" id="basket-refresh" value="{% trans 'Update items' %}" />
         </p>
 	</form>
-    {# if you want, you can show order info form here #}
-    
-    <form action="{% url order_confirm %}" id="basket_order_submit_form" method="POST">
-        {{ order_form.as_p }}
-        {% csrf_token %}
-        <input type="submit" value="{% trans 'Submit order' %}" />
-    </form>
+
 {% else %}
 	<p>{% trans 'Your basket is empty' %}</p>
 {% endif %}

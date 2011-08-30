@@ -4,7 +4,7 @@ from classytags.core import Tag, Options
 from django import template
 from django.contrib.contenttypes.models import ContentType
 from django.template.loader import render_to_string
-
+from basket.forms import AddItemForm
 
 register = template.Library()
 
@@ -53,10 +53,8 @@ class AddButton(Tag):
     }
 
     def render_tag(self, context, instance, button_type):
-        content_type = ContentType.objects.get_for_model(instance)
         return render_to_string(self.templates[button_type], {
-            'instance': instance,
-            'content_type': content_type
+            'form': AddItemForm.for_object(instance),
         })
 
 register.tag(AddButton)

@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
-from basket.forms import OrderFormset
+from basket.forms import OrderFormset, AddItemForm
 from basket.models import Order
-from basket.utils import render_to, get_order_form, send_mail
-from basket.signals import order_submit
 from basket.settings import BASKET_OPTIONS_USE_KEEP, BASKET_OPTIONS_USE_DELETE
+from basket.signals import order_submit
+from basket.utils import render_to, get_order_form, send_mail
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.views.decorators.http import require_http_methods
 from django.http import HttpResponseBadRequest, HttpResponseRedirect, Http404
 from django.template import loader
+from django.views.decorators.http import require_http_methods
+import simplejson
+from django.shortcuts import render_to_response
 
 
 @render_to('basket/basket.html')
 def basket(request):
     # do not create order automatically
     order = request.order
-    if order is None:
+    if order is None or order.total['count'] == 0:
         return HttpResponseRedirect(reverse('basket-empty'))
+
 
     if request.method == 'POST':
         formset = OrderFormset(request.POST, instance=order)
@@ -34,9 +37,7 @@ def basket(request):
         formset = OrderFormset(instance=order)
 
     return {
-        'order_form': get_order_form()(request),
         'formset': formset,
-        'order': order,
         'keep': BASKET_OPTIONS_USE_KEEP,
         'delete': BASKET_OPTIONS_USE_DELETE,
     }
@@ -59,10 +60,7 @@ def confirm(request):
     return {
         'form': form,
         'order': order,
-        'keep': BASKET_OPTIONS_USE_KEEP,
-        'delete': BASKET_OPTIONS_USE_DELETE,
     }
-
 
 def thankyou(request):
     '''Use generic view instead'''
@@ -73,7 +71,6 @@ def status(request, order_id=None):
     raise NotImplementedError
 
 @require_http_methods(["POST"])
-@render_to('basket/summary.html')
 def add_to_basket(request):
     # Automatically create order if it does not exist
     if request.order is None:
@@ -82,16 +79,16 @@ def add_to_basket(request):
     else:
         order = request.order
 
-    content_type_id = request.REQUEST.get('content_type', None)
-    object_id = request.REQUEST.get('object_id', None)
-    try:
-        content_type = ContentType.objects.get(id=content_type_id)
-        item = content_type.get_object_for_this_type(id=object_id)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    order.add_item(item)
-    return {}
+    if request.method == 'POST':
+        form = AddItemForm(order, request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            return HttpResponseBadRequest(form.errors)
+    if request.is_ajax():
+        return render_to_response('basket/summary.html', {})
+    else:
+        return HttpResponseRedirect(reverse('basket'))
 
 
 @require_http_methods(["POST"])
