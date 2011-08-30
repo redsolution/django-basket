@@ -84,7 +84,7 @@ def add_to_basket(request):
         order = request.order
 
     # Save last page user visited in cookie
-    referer = request.META['HTTP_REFERER'].replace(request.META['HTTP_ORIGIN'], '')
+    referer = request.META['HTTP_REFERER'].split(request.META['HTTP_HOST'])[1]
     request.session['referer'] = referer
 
     if request.method == 'POST':
