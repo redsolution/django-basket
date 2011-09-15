@@ -39,9 +39,13 @@ to all pages with order buttons::
 
 Finally, at the item page ::
 
-    {% add_basket_button object %}
+    {% add_basket_button object 'button_text' 'added_text' 'already_in_text' 'template_name' %}
 
-Where ``object`` is avaiable to order.
+Where ``object`` is avaiable to order,
+``'button_text'`` is the text printed on the add button,
+``'added_text'`` is the text that appears near the add button,
+and ``'already_in_text'`` is the text placed above the add button when page loaded.
+Unrequired ``'template_name'`` is the path to rendered template.
 
 
 .. _available-settings:
