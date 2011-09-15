@@ -35,14 +35,19 @@ class AddBasketButton(InclusionTag):
             })
         else:
             content_type = ContentType.objects.get_for_model(object)
-            order_id = context['request'].session['order_id']
             
-            # quantity of such items those are already into basket
-            already_in_qty = BasketItem.objects.filter(order=order_id, content_type=content_type, object_id=object.id).count()
+            try:
+                order_id = context['request'].session['order_id']
             
-            # is any number of such items in the basket
-            already_in = bool(already_in_qty)
+                # quantity of such items those are already into basket
+                already_in_qty = BasketItem.objects.filter(order=order_id, content_type=content_type, object_id=object.id).count()
             
+                # is any number of such items in the basket
+                already_in = bool(already_in_qty)
+            except KeyError:
+                # for private mode
+                already_in = False
+                
             context_to_return.update({
                 'content_type': content_type,
                 'object': object,
