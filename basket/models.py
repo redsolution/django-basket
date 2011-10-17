@@ -138,11 +138,13 @@ class Order(models.Model):
         total_goods = 0
         total_price = Decimal('0.0')
         for basket_item in self.items.all():
+            total_goods += basket_item.quantity
             try:
                 total_price += basket_item.get_sum()
             except AttributeError:
                 pass
-            total_goods += basket_item.quantity
+            except TypeError:
+                total_price = _('Undefined')
         return {'goods': total_goods, 'summary': total_price}
 
     def goods(self):
@@ -183,10 +185,16 @@ class BasketItem(models.Model):
             value = getattr(self.content_object, PRICE_ATTR)
         if callable(value):
             value = value()
+        if value is None:
+            return _('Undefined')
         return value
 
     def get_sum(self):
-        return self.get_price() * self.quantity
+        p = self.get_price()
+        q = self.quantity
+        if p is None:
+            return _('Undefined')
+        return p * q 
 
 
 def comment_order(order, form_data):
