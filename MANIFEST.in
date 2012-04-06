@@ -1,2 +1,3 @@
 recursive-include basket/media *.*  
 recursive-include basket/templates *.html, *.js
+recursive-include basket/locale *.po, *.mo
