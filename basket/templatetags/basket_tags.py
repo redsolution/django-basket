@@ -13,9 +13,9 @@ class AddBasketButton(InclusionTag):
     
     options = Options(
         Argument('object', required=True, resolve=True),
-        Argument('button_text', required=True, resolve=False),
-        Argument('added_text', required=True, resolve=False),
-        Argument('already_in_text', required=True, resolve=False),
+        Argument('button_text', required=False, resolve=False),
+        Argument('added_text', required=False, resolve=False),
+        Argument('already_in_text', required=False, resolve=False),
         Argument('template_name', required=False, resolve=False),
     )
 
