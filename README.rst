@@ -84,3 +84,12 @@ Available settings
     If set to True, user will see delete icons near all items at basket page.
     When user click on icon, item will be deleted from basket by AJAX request
     and basket page will be automatically updated.
+
+
+**ORDER_STATUSES**
+    
+    Default: `basket.models.STATUS_CHIOCES`
+    
+    If set to True, user will see delete icons near all items at basket page.
+    When user click on icon, item will be deleted from basket by AJAX request
+    and basket page will be automatically updated.

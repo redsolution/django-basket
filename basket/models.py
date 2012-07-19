@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from basket.settings import PRICE_ATTR
+from basket.settings import PRICE_ATTR, ORDER_STATUSES
 from basket.signals import order_submit
 from basket.utils import get_order_form, send_mail
 from datetime import datetime
@@ -59,7 +59,7 @@ class Order(models.Model):
     session_key = models.CharField(verbose_name=_('Session key'),
         max_length=40, null=True, blank=True)
     # fields from order status
-    status = models.IntegerField(verbose_name=_('Order status'), choices=STATUS_CHIOCES)
+    status = models.IntegerField(verbose_name=_('Order status'), choices=ORDER_STATUSES)
     created = models.DateTimeField(verbose_name=_('Created date'))
     comment = models.TextField(verbose_name=_('Comment'), blank=True, null=True)
 
