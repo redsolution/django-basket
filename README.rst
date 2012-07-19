@@ -90,6 +90,4 @@ Available settings
     
     Default: `basket.models.STATUS_CHIOCES`
     
-    If set to True, user will see delete icons near all items at basket page.
-    When user click on icon, item will be deleted from basket by AJAX request
-    and basket page will be automatically updated.
+    An iterable (e.g., a list or tuple) of 2-tuples to use as choices for Order's status field.
