@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from basket.settings import PRICE_ATTR, ORDER_STATUSES
+from basket.settings import PRICE_ATTR, ORDER_STATUSES, STATUS_PENDING, STATUS_NEW, ORDER_EMAIL_SUBJECT
 from basket.signals import order_submit
 from basket.utils import get_order_form, send_mail
 from datetime import datetime
@@ -15,19 +15,6 @@ from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 
-STATUS_PENDING = 0
-STATUS_NEW = 1
-STATUS_PROCESS = 2
-STATUS_CLOSED = 3
-STATUS_ERROR = 4
-
-STATUS_CHIOCES = (
-    (STATUS_PENDING, _('Pending')),
-    (STATUS_NEW, _('New')),
-    (STATUS_PROCESS, _('Process')),
-    (STATUS_CLOSED, _('Closed & OK')),
-    (STATUS_ERROR, _('Closed with error')),
-)
 
 def query_set_factory(model_name, query_set_class):
     class ChainedManager(models.Manager):
@@ -214,7 +201,7 @@ def comment_order(order, form_data):
 def email_to_managers(sender, **kwargs):
     '''Send email when order issued'''
     managers = [manager[1] for manager in settings.MANAGERS]
-    subject = _('New order from site')
+    subject = _(ORDER_EMAIL_SUBJECT)
 
     order = kwargs['order']
     form_data = kwargs['data']

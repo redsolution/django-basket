@@ -88,6 +88,13 @@ Available settings
 
 **ORDER_STATUSES**
     
-    Default: `basket.models.STATUS_CHIOCES`
+    Default: `basket.settings.DEFAULT_ORDER_STATUSES`
     
     An iterable (e.g., a list or tuple) of 2-tuples to use as choices for Order's status field.
+
+
+**ORDER_EMAIL_SUBJECT**
+
+    Default: `'New order from site'`
+
+    Subject for message emailed to managers after an order confirmed.
