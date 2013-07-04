@@ -17,7 +17,9 @@ Installation
 
     ./manage.py syncdb
 
-5. Do not foget to copy or symlink ``media/basket`` to your ``media`` folder.
+5. Collect static files::
+
+    ./manage.py collectstatic
 
 Usage
 ======
@@ -35,7 +37,7 @@ In order to basket javascript works, you have to add jQuery and basket.js
 to all pages with order buttons::
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
-    <script type="text/javascript" src="/media/basket/js/basket.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}basket/js/basket.js"></script>
 
 Finally, at the item page ::
 
