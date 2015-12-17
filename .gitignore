@@ -1,5 +1,6 @@
 .installed.cfg
 .svn
+.idea*
 *.bat
 *.orig
 *.pyc
