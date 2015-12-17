@@ -1,33 +1,32 @@
 # -*- coding: utf-8 -*-
-from basket.settings import PRICE_ATTR, ORDER_STATUSES, STATUS_PENDING, STATUS_NEW, ORDER_EMAIL_SUBJECT
-from basket.signals import order_submit
-from basket.utils import get_order_form, send_mail
 from datetime import datetime
 from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sessions.models import Session
-from django.db.models import Count
+from django.apps import apps
 from django.db import models
 from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
+from basket.settings import PRICE_ATTR, ORDER_STATUSES, STATUS_PENDING, STATUS_NEW, ORDER_EMAIL_SUBJECT
+from basket.signals import order_submit
+from basket.utils import get_order_form, send_mail
 
 
 def query_set_factory(model_name, query_set_class):
     class ChainedManager(models.Manager):
 
-        def get_query_set(self):
-            model = models.get_model('basket', model_name)
+        def get_queryset(self):
+            model = apps.get_model('basket', model_name)
             return query_set_class(model)
 
         def __getattr__(self, attr, *args):
             try:
                 return getattr(self.__class__, attr, *args)
             except AttributeError:
-                return getattr(self.get_query_set(), attr, *args)
+                return getattr(self.get_queryset(), attr, *args)
     return ChainedManager()
 
 class OrderQuerySet(models.query.QuerySet):

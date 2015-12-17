@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from basket.settings import BASKET_OPTIONS_USE_DELETE
+from django.views.generic import TemplateView
 
 urlpatterns = patterns('basket.views',
     url(r'^$', 'basket', name='basket'),
@@ -14,8 +15,8 @@ if BASKET_OPTIONS_USE_DELETE:
     )
 
 urlpatterns += patterns('django.views.generic.simple',
-    url(r'^thankyou/$', 'direct_to_template', {'template': 'basket/thankyou.html'},
+    url(r'^thankyou/$', TemplateView.as_view(template_name='basket/thankyou.html'),
         name='basket-thankyou'),
-    url(r'^empty/$', 'direct_to_template', {'template': 'basket/empty.html'},
+    url(r'^empty/$', TemplateView.as_view(template_name='basket/empty.html'),
         name='basket-empty'),
 )

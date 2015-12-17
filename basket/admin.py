@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django import forms
-from django import forms
 from basket.models import Order
 from django.utils.translation import ugettext_lazy as _
 
@@ -9,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Order
+        fields = '__all__'
 
 class OrderAdmin(admin.ModelAdmin):
     model = Order

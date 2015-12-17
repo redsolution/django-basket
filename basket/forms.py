@@ -10,10 +10,12 @@ from django.utils.translation import ugettext_lazy as _
 class BasketItemForm(forms.ModelForm):
     class Meta:
         model = BasketItem
+        fields = '__all__'
 
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all(),
         widget=forms.HiddenInput)
     object_id = forms.IntegerField(widget=forms.HiddenInput)
+    quantity = forms.IntegerField(widget=forms.TextInput)
     if BASKET_OPTIONS_USE_KEEP:
         keep = forms.BooleanField(initial=True, required=False)
 
