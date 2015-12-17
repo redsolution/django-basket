@@ -100,3 +100,8 @@ Available settings
     Default: `'New order from site'`
 
     Subject for message emailed to managers after an order confirmed.
+
+
+Chengelog
+==================
+    0.6.1 - Use for django >=1.7.
